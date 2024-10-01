@@ -1,0 +1,29 @@
+name: Rats2-Spigot
+version: '1.0-SNAPSHOT'
+main: pow.rats2spigot.MainManager
+api-version: '1.20'
+commands:
+  test:
+    description: Use to move players to the voidrising minigame lobby
+  clear_all_doors:
+    description: asdf
+  create_all_doors:
+    description: asdf
+  open_all_doors:
+    description: asdf
+  close_all_doors:
+    description: asdf
+  toggle_all_doors:
+    description: asdf
+  advance_day:
+    description: asdf
+  reset_week:
+    description: asdf
+  nighttime_doors:
+    description: asdf
+  stove_tops_on:
+    description: asdf
+  stove_tops_off:
+    description: asdf
+  populate_all_chests:
+    description: asdf
