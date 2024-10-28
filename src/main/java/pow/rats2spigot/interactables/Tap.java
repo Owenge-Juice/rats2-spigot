@@ -8,6 +8,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Score;
@@ -48,6 +49,10 @@ public class Tap {
         return interaction;
     }
 
+    public ItemDisplay getItemDisplay() {
+        return itemDisplay;
+    }
+
     public boolean isTurned() {
         return turned;
     }
@@ -72,9 +77,70 @@ public class Tap {
         Location interactionLocation = location.clone();
         applyOffsetToLocation(interactionLocation,blockFace);
         interaction = (Interaction) interactionLocation.getWorld().spawnEntity(interactionLocation,EntityType.INTERACTION);
+        interaction.getScoreboardTags().add("TapInteraction");
         interaction.setInteractionHeight(0.5f);
         interaction.setInteractionWidth(0.5f);
         interaction.setResponsive(true);
+    }
+
+    private void createItemDisplay() {
+        // Set offset coordinates and rotation angle
+        Location displayLocation = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());
+        // Create a ItemDisplay entity
+        itemDisplay = (ItemDisplay) displayLocation.getWorld().spawnEntity(displayLocation, EntityType.ITEM_DISPLAY);
+
+
+        itemDisplay.getScoreboardTags().add("TapItemDisplay");
+        // Set the block data to display
+        ItemStack tapModel = new ItemStack(Material.CARVED_PUMPKIN);
+        ItemMeta meta = tapModel.getItemMeta();
+        meta.setCustomModelData(10001);
+        tapModel.setItemMeta(meta);
+        //itemDisplay.setItemStack(new ItemStack(Material.IRON_BLOCK));
+        itemDisplay.setItemStack(tapModel);
+
+
+
+        Transformation transform = new Transformation(
+                new Vector3f(0.5f,0.5f,0.5f),                        // translation
+                new Quaternionf(),               // left rotation
+                new Vector3f(1f, 1f, 1f),  // scale
+                new Quaternionf()                // right rotation
+        );
+        itemDisplay.setTransformation(transform);
+
+
+        transform = itemDisplay.getTransformation();
+        Quaternionf rotation = null;
+        switch (blockFace) {
+            case NORTH: rotation = new Quaternionf().rotationY((float) Math.toRadians(0*1));
+                break;
+            case SOUTH: rotation = new Quaternionf().rotationY((float) Math.toRadians(180*1));
+                break;
+            case EAST:  rotation = new Quaternionf().rotationY((float) Math.toRadians(270*1));
+                break;
+            case WEST:  rotation = new Quaternionf().rotationY((float) Math.toRadians(90*1));
+                break;
+            default:    rotation = null;
+        }
+
+        // Apply rotation
+        transform.getLeftRotation().mul(rotation);
+        // Set new transformation
+        itemDisplay.setTransformation(transform);
+
+
+    }
+
+    private Vector3f calculateOffset(BlockFace face) {
+
+        switch (face) {
+            case NORTH: return new Vector3f(0.5f,0.5f,0.5f);
+            case SOUTH: return new Vector3f(0.5f, 0.5f, 0.5f);
+            case EAST:  return new Vector3f(0.5f, 0.5f, 0.5f);
+            case WEST:  return new Vector3f(0.5f, 0.5f, 0.5f);
+            default:    return new Vector3f(0f,0f,0f);
+        }
     }
 
     public void rotateTap(){
@@ -103,11 +169,11 @@ public class Tap {
         if(blockFace ==BlockFace.NORTH){
             rotation = new Quaternionf().rotationZ((float) Math.toRadians(-150*rotationOpposite));
         }else if(blockFace ==BlockFace.SOUTH){
-            rotation = new Quaternionf().rotationZ((float) Math.toRadians(150*rotationOpposite));
+            rotation = new Quaternionf().rotationZ((float) Math.toRadians(-150*rotationOpposite));
         }else if(blockFace ==BlockFace.EAST){
-            rotation = new Quaternionf().rotationX((float) Math.toRadians(150*rotationOpposite));
+            rotation = new Quaternionf().rotationZ((float) Math.toRadians(-150*rotationOpposite));
         }else if(blockFace ==BlockFace.WEST){
-            rotation = new Quaternionf().rotationX((float) Math.toRadians(-150*rotationOpposite));
+            rotation = new Quaternionf().rotationZ((float) Math.toRadians(-150*rotationOpposite));
         }
 
         // Apply rotation
@@ -134,29 +200,7 @@ public class Tap {
         }.runTaskLater(mainManager, 15*20); // 100 ticks = 5 seconds
     }
 
-    private void createItemDisplay() {
-        // Set offset coordinates and rotation angle
-        Location displayLocation = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());
-        // Create a ItemDisplay entity
-        itemDisplay = (ItemDisplay) displayLocation.getWorld().spawnEntity(displayLocation, EntityType.ITEM_DISPLAY);
 
-        // Set the block data to display
-        //blockDisplay.setBlock(Material.DIAMOND_BLOCK.createBlockData());
-        itemDisplay.setItemStack(new ItemStack(Material.DIAMOND_BLOCK));
-
-
-
-
-        Vector3f offset = calculateOffset(blockFace);
-
-        Transformation transform = new Transformation(
-                offset,                          // translation
-                new Quaternionf(),               // left rotation
-                new Vector3f(0.5f, 0.5f, 0.5f),  // scale
-                new Quaternionf()                // right rotation
-        );
-        itemDisplay.setTransformation(transform);
-    }
 
     private Location applyOffsetToLocation(Location location, BlockFace face){
         switch (face) {
@@ -168,14 +212,5 @@ public class Tap {
         }
     }
 
-    private Vector3f calculateOffset(BlockFace face) {
 
-        switch (face) {
-            case NORTH: return new Vector3f(0.5f,0.5f,0.25f);
-            case SOUTH: return new Vector3f(0.5f, 0.5f, 0.75f);
-            case EAST:  return new Vector3f(0.75f, 0.5f, 0.5f);
-            case WEST:  return new Vector3f(0.25f, 0.5f, 0.5f);
-            default:    return new Vector3f(0f,0f,0f);
-        }
-    }
 }

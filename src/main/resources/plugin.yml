@@ -1,29 +1,131 @@
 name: Rats2-Spigot
 version: '${project.version}'
 main: pow.rats2spigot.MainManager
+depend: [Citizens]
 api-version: '1.20'
 commands:
   test:
-    description: Use to move players to the voidrising minigame lobby
+    description: asdf
+    permission: op
   clear_all_doors:
     description: asdf
+    permission: op
   create_all_doors:
     description: asdf
+    permission: op
   open_all_doors:
     description: asdf
+    permission: op
   close_all_doors:
     description: asdf
+    permission: op
   toggle_all_doors:
     description: asdf
+    permission: op
   advance_day:
     description: asdf
+    permission: op
   reset_week:
     description: asdf
+    permission: op
   nighttime_doors:
     description: asdf
+    permission: op
   stove_tops_on:
     description: asdf
+    permission: op
   stove_tops_off:
     description: asdf
+    permission: op
   populate_all_chests:
     description: asdf
+    permission: op
+  reset_all_taps:
+    description: asdf
+    permission: op
+  begin_citizens:
+    description: asdf
+    permission: op
+  clear_all_npcs:
+    description: asdf
+    permission: op
+  spawn_citizens:
+    description: asdf
+    permission: op
+  make_npc_walk:
+    description: asdf
+    permission: op
+  pathing_tool_give:
+    description: asdf
+    permission: op
+  clear_all_catchers:
+    description: asdf
+    permission: op
+  create_cheese:
+    description: asdf
+    permission: op
+  reset_all_cheeses:
+    description: asdf
+    permission: op
+  update_lights:
+    description: asdf
+    permission: op
+  reset_all_traps:
+    description: asdf
+    permission: op
+  create_trap:
+    description: asdf
+    permission: op
+  give_up:
+    description: die
+  fakename:
+    description: Use to change your in game name to whatever you want, use by typing /fakename <desired_name>
+  hard_clear_all_npcs:
+    permission: op
+    description: asdf
+  little_tiles_chunk:
+    permission: op
+    description: asdf
+  spook_effect_near:
+    description: asdf
+  spook_effect_all:
+    description: asdf
+  summon_tiny_spider:
+    description: asdf
+    permission: op
+  halloween_dialogue_starting:
+    description: asdf
+    permission: op
+  halloween_dialogue_ending:
+    description: asdf
+    permission: op
+  halloween_dialogue_brawl:
+    description: asdf
+    permission: op
+  halloween_dialogue_graveyard:
+    description: asdf
+    permission: op
+  halloween_dialogue_knowledge:
+    description: asdf
+    permission: op
+  halloween_dialogue_shooting:
+    description: asdf
+    permission: op
+  cancel_cat_disc:
+    description: asdf
+    permission: op
+  halloween_summon_brawl_1:
+    description: asdf
+    permission: op
+  halloween_summon_brawl_2:
+    description: asdf
+    permission: op
+  halloween_summon_brawl_3:
+    description: asdf
+    permission: op
+  halloween_completed:
+    description: asdf
+    permission: op
+  summon_tiny_spider_here:
+    description: asdf
+    permission: op

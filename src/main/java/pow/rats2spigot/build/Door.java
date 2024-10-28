@@ -156,109 +156,114 @@ public abstract class Door {
         //First we clear the area
         clear();
 
-        //we iterate over every position in the template location
-        for (int width = 0; width < doorWidth; width++) {
-            for (int height = 0; height < 7; height++) {
-                for (int depth = -1; depth <=1 ; depth++) {
-                    //We get the location data of the copy region
-                    Location tempCopyLocation = templateLocation.clone();
-                    tempCopyLocation.add(width,height,depth);
+        //We do not recreate the door if it was a thin door
+        if(this instanceof ThinDoor){
+            //Utility.sendMessageToAllAdmins("trigger door!");
+        }else{
+            //we iterate over every position in the template location
+            for (int width = 0; width < doorWidth; width++) {
+                for (int height = 0; height < 7; height++) {
+                    for (int depth = -1; depth <=1 ; depth++) {
+                        //We get the location data of the copy region
+                        Location tempCopyLocation = templateLocation.clone();
+                        tempCopyLocation.add(width,height,depth);
 
-                    //And we get the location data of the paste region
-                    Location tempPasteLocation = locationToRotateFrom.clone();
-                    int newWidth = width;
-                    int newDepth = depth;
-                    if(!doorKnobRight){
-                        newWidth=(doorWidth-1)-width;
-                        newDepth=depth*-1;
-                    }
-                    tempPasteLocation.add(newWidth,height,newDepth);
-
-                    //Before pasting, we rotate the pasteLocation, around the location to rotate from,
-                    //equal to a number that is spat out by getDifferenceInRotation.
-                    //To get that number, we use the difference between the rootBlockFace (How the door started)
-                    //And it's current blockface
-
-
-                    tempPasteLocation = rotateCoordinate(tempPasteLocation,locationToRotateFrom,getInwardsOrOutwards()+getDifferenceInRotation(BlockFace.NORTH,rootBlockFace));
-
-                    //If the paste location is air, and the copy location is not air,
-                    if(tempPasteLocation.getBlock().getType()== Material.AIR && tempCopyLocation.getBlock().getType()!=Material.AIR){
-                        //Paste the block
-                        tempPasteLocation.getBlock().setType(tempCopyLocation.getBlock().getType());
-                        tempPasteLocation.getBlock().setBlockData(tempCopyLocation.getBlock().getBlockData());
-
-                        //We then get the blockdata of the block we just pasted
-                        BlockData blockData = tempPasteLocation.getBlock().getBlockData();
-
-
-                        //If the block can be directional
-                        if(blockData instanceof Directional){
-                            //We cast it to be directional
-                            Directional directional = (Directional) blockData;
-
-
-                            int difference;
-                            if(doorKnobRight){
-                                difference =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())+ getInwardsOrOutwards();
-                            }else{
-                                difference =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())- getInwardsOrOutwards();
-                            }
-                            //Calculate what that rotation from the rootFace of this door is
-                            BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,difference);
-                            //Set it facing equal to the warped signs facing
-                            directional.setFacing(correctFaceForPastedLocation);
-                            //buttonData.setFacing(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing());
-                            //And update the paste location with that data
-                            tempPasteLocation.getBlock().setBlockData(directional);
-
+                        //And we get the location data of the paste region
+                        Location tempPasteLocation = locationToRotateFrom.clone();
+                        int newWidth = width;
+                        int newDepth = depth;
+                        if(!doorKnobRight){
+                            newWidth=(doorWidth-1)-width;
+                            newDepth=depth*-1;
                         }
+                        tempPasteLocation.add(newWidth,height,newDepth);
 
-                        //If the block from the template is a crimson wall sign,
-                        if(tempCopyLocation.getBlock().getType()==Material.CRIMSON_WALL_SIGN){
-                            //and the door should have the knob on the right
-                            if(doorKnobRight){
-                                //Otherwise place an oak button
-                                tempPasteLocation.getBlock().setType(Material.OAK_BUTTON);
-                                //Utility.sendMessageToAllAdmins(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing().toString());
-                                //Get the block data of the just placed button
-                                Directional buttonData = ((Directional)tempPasteLocation.getBlock().getBlockData());
-                                //Get the difference between north and the way that the copy block location is facing
-                                int differenceInOriginalPlus =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())+ getInwardsOrOutwards();
+                        //Before pasting, we rotate the pasteLocation, around the location to rotate from,
+                        //equal to a number that is spat out by getDifferenceInRotation.
+                        //To get that number, we use the difference between the rootBlockFace (How the door started)
+                        //And it's current blockface
+
+
+                        tempPasteLocation = rotateCoordinate(tempPasteLocation,locationToRotateFrom,getInwardsOrOutwards()+getDifferenceInRotation(BlockFace.NORTH,rootBlockFace));
+
+                        //If the paste location is air, and the copy location is not air,
+                        if(tempPasteLocation.getBlock().getType()== Material.AIR && tempCopyLocation.getBlock().getType()!=Material.AIR){
+                            //Paste the block
+                            tempPasteLocation.getBlock().setType(tempCopyLocation.getBlock().getType());
+                            tempPasteLocation.getBlock().setBlockData(tempCopyLocation.getBlock().getBlockData());
+
+                            //We then get the blockdata of the block we just pasted
+                            BlockData blockData = tempPasteLocation.getBlock().getBlockData();
+
+
+                            //If the block can be directional
+                            if(blockData instanceof Directional){
+                                //We cast it to be directional
+                                Directional directional = (Directional) blockData;
+
+
+                                int difference;
+                                if(doorKnobRight){
+                                    difference =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())+ getInwardsOrOutwards();
+                                }else{
+                                    difference =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())- getInwardsOrOutwards();
+                                }
                                 //Calculate what that rotation from the rootFace of this door is
-                                BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,differenceInOriginalPlus);
+                                BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,difference);
                                 //Set it facing equal to the warped signs facing
-                                buttonData.setFacing(correctFaceForPastedLocation);
+                                directional.setFacing(correctFaceForPastedLocation);
                                 //buttonData.setFacing(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing());
                                 //And update the paste location with that data
-                                tempPasteLocation.getBlock().setBlockData(buttonData);
-                            }else{
-                                //Otherwise just place air
-                                tempPasteLocation.getBlock().setType(Material.AIR);
-                            }
-                        }else if(tempCopyLocation.getBlock().getType()==Material.WARPED_WALL_SIGN){
-                            //If it was a warped sign and the doorknob should be on the left
-                            if(doorKnobRight){
-                                //Place air
-                                tempPasteLocation.getBlock().setType(Material.AIR);
-                            }else{
-                                //Otherwise place an oak button
-                                tempPasteLocation.getBlock().setType(Material.OAK_BUTTON);
-                                //Utility.sendMessageToAllAdmins(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing().toString());
-                                //Get the block data of the just placed button
-                                Directional buttonData = ((Directional)tempPasteLocation.getBlock().getBlockData());
-                                //Get the difference between north and the way that the copy block location is facing
-                                int differenceInOriginalMinus = getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())-getInwardsOrOutwards();
-                                //Calculate what that rotation from the rootFace of this door is
-                                BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,differenceInOriginalMinus);
-                                //Set it facing equal to the warped signs facing
-                                buttonData.setFacing(correctFaceForPastedLocation);
-                                //buttonData.setFacing(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing());
-                                //And update the paste location with that data
-                                tempPasteLocation.getBlock().setBlockData(buttonData);
-                            }
-                        }
+                                tempPasteLocation.getBlock().setBlockData(directional);
 
+                            }
+
+                            //If the block from the template is a crimson wall sign,
+                            if(tempCopyLocation.getBlock().getType()==Material.CRIMSON_WALL_SIGN){
+                                //and the door should have the knob on the right
+                                if(doorKnobRight){
+                                    //Otherwise place an oak button
+                                    tempPasteLocation.getBlock().setType(Material.OAK_BUTTON);
+                                    //Utility.sendMessageToAllAdmins(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing().toString());
+                                    //Get the block data of the just placed button
+                                    Directional buttonData = ((Directional)tempPasteLocation.getBlock().getBlockData());
+                                    //Get the difference between north and the way that the copy block location is facing
+                                    int differenceInOriginalPlus =getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())+ getInwardsOrOutwards();
+                                    //Calculate what that rotation from the rootFace of this door is
+                                    BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,differenceInOriginalPlus);
+                                    //Set it facing equal to the warped signs facing
+                                    buttonData.setFacing(correctFaceForPastedLocation);
+                                    //buttonData.setFacing(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing());
+                                    //And update the paste location with that data
+                                    tempPasteLocation.getBlock().setBlockData(buttonData);
+                                }else{
+                                    //Otherwise just place air
+                                    tempPasteLocation.getBlock().setType(Material.AIR);
+                                }
+                            }else if(tempCopyLocation.getBlock().getType()==Material.WARPED_WALL_SIGN){
+                                //If it was a warped sign and the doorknob should be on the left
+                                if(doorKnobRight){
+                                    //Place air
+                                    tempPasteLocation.getBlock().setType(Material.AIR);
+                                }else{
+                                    //Otherwise place an oak button
+                                    tempPasteLocation.getBlock().setType(Material.OAK_BUTTON);
+                                    //Utility.sendMessageToAllAdmins(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing().toString());
+                                    //Get the block data of the just placed button
+                                    Directional buttonData = ((Directional)tempPasteLocation.getBlock().getBlockData());
+                                    //Get the difference between north and the way that the copy block location is facing
+                                    int differenceInOriginalMinus = getDifferenceInRotation(BlockFace.NORTH,((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing())-getInwardsOrOutwards();
+                                    //Calculate what that rotation from the rootFace of this door is
+                                    BlockFace correctFaceForPastedLocation = getBlockFaceAfterRotation(rootBlockFace,differenceInOriginalMinus);
+                                    //Set it facing equal to the warped signs facing
+                                    buttonData.setFacing(correctFaceForPastedLocation);
+                                    //buttonData.setFacing(((Directional)tempCopyLocation.getBlock().getBlockData()).getFacing());
+                                    //And update the paste location with that data
+                                    tempPasteLocation.getBlock().setBlockData(buttonData);
+                                }
+                            }
+
+                        }
                     }
                 }
             }

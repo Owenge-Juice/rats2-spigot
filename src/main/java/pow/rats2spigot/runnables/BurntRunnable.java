@@ -28,7 +28,7 @@ public class BurntRunnable extends BukkitRunnable {
     public void run() {
         timeLeft-=1;
         if(timeLeft%2==0){
-            player.spawnParticle(Particle.SMOKE_LARGE,player.getLocation(),0,0,0,0,0);
+            player.getWorld().spawnParticle(Particle.SMOKE_LARGE,player.getLocation(),0,0,0,0,0);
         }
 
         if(timeLeft<=0){

@@ -44,7 +44,8 @@ public class AmbientLocation {
 
         Random random = new Random();
         String randomSoundVariance = sound + random.nextInt(numberOfVariations);
-        Utility.sendMessageToAllAdmins("playing ambience for " + player.getName() +": " + randomSoundVariance);
+        //TODO: Playing ambience flag
+        //Utility.sendMessageToAllAdmins("playing ambience for " + player.getName() +": " + randomSoundVariance);
         player.getWorld().playSound(locationOfAmbience,randomSoundVariance, SoundCategory.AMBIENT,1,1);
         playingMap.replace(player.getName(),true);
         BukkitTask bukkitTask = new BukkitRunnable() {

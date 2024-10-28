@@ -24,7 +24,7 @@ public class AmbientRunnable extends BukkitRunnable {
         startTaskTimer(0,20);
     }
 
-    //ran every second, and depending on how many seconds has passed, prints text accordingly.
+    //ran every second
     @Override
     public void run() {
         for(AmbientLocation ambientLocation : ambientLocations){

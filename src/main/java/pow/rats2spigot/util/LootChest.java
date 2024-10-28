@@ -25,6 +25,10 @@ public class LootChest {
         this.mainManager = mainManager;
     }
 
+    public Location getPasteLocation() {
+        return pasteLocation;
+    }
+
     public void populateChest(){
         if(copyLocation !=null){
             pasteLocation.getBlock().setType(Material.CHEST);
@@ -38,7 +42,5 @@ public class LootChest {
         }else{
             Utility.sendMessageToAllAdmins("ERROR: CopyLocation Name could not be found: " + name);
         }
-
-
     }
 }
