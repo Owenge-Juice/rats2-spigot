@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.json.JSONObject;
 import pow.rats2spigot.MainManager;
 
@@ -116,5 +117,23 @@ public class Utility {
 
         // Calculate the new point 1 unit behind the target
         return new Location(target.getWorld(),target.getX() - unitX, target.getY() - unitY, target.getZ() - unitZ);
+    }
+
+    public static Location getPositionBehindHead(Player player) {
+        // Get the player's location
+        Location playerLocation = player.getLocation();
+
+        // Dynamically calculate head height based on player height
+        double headHeightOffset = player.getHeight() * 0.85;  // Approximate head height at 85% of full height
+        playerLocation.add(0, headHeightOffset, 0);
+
+        // Get the direction the player is looking and reverse it for the position behind them
+        Vector direction = playerLocation.getDirection().normalize();
+        Vector reverseDirection = direction.multiply(-0.5);  // Adjust this multiplier for distance behind the head
+
+        // Add the reversed direction to the location to get the position behind
+        Location positionBehindHead = playerLocation.add(reverseDirection);
+
+        return positionBehindHead;
     }
 }

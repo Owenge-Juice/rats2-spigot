@@ -2,6 +2,7 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\comma
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\close_all_doors.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\RadioRunnable.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\advance_day.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_dialogue_3.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\build\BasementDoor.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\interactables\Radio.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\runnables\HalloweenRunnable.java
@@ -10,7 +11,9 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\comma
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\reset_week.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\DayTimeRunnable.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\FreezerRunnable.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_dialogue_4.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\fakename.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\give_funsnap.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\stove_tops_off.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\CatcherRunnable.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\StreetNPC.java
@@ -25,6 +28,7 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\comma
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\halloween_summon_brawl_3.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\stove_tops_on.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\build\ThinDoor.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\declan_1.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\clear_all_catchers.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\populate_all_chests.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\StoveRunnable.java
@@ -35,6 +39,7 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\Stree
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\ChestRunnable.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\create_all_doors.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\halloween_dialogue_brawl.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\give_lockpick.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\pathing_tool_give.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\update_lights.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\runnables\BurntRunnable.java
@@ -47,11 +52,14 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\inter
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\CitizensManipulate.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\CatcherManager.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\create_trap.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_dialogue_1.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\spawn_citizens.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\build\Door.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\runnables\TemplateRunnable.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\hard_clear_all_npcs.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\test.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\declan_2.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_doorbell.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\summon_tiny_spider.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\interactables\Trap.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\util\Utility.java
@@ -68,6 +76,9 @@ C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\comma
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\StoveManager.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\begin_citizens.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\halloween_summon_brawl_2.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_crash.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\give_sugar_cube.java
+C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\inspector_dialogue_2.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\commands\open_all_doors.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\MainManager.java
 C:\Users\OwenJ\Documents\GitHub\rats2-spigot\src\main\java\pow\rats2spigot\build\WideDoor.java

@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
@@ -175,6 +174,21 @@ public final class MainManager extends JavaPlugin implements Listener {
         new halloween_summon_brawl_3(this);
         new halloween_completed(this);
         new summon_tiny_spider_here(this);
+
+        new inspector_crash(this);
+        new inspector_doorbell(this);
+        new inspector_dialogue_1(this);
+        new inspector_dialogue_2(this);
+        new inspector_dialogue_3(this);
+        new inspector_dialogue_4(this);
+        new declan_1(this);
+        new declan_2(this);
+
+        new give_sugar_cube(this);
+        new give_funsnap(this);
+        new give_lockpick(this);
+
+        new reauthor_book(this);
 
         ambientManager = new AmbientManager(this);
         citizensManipulate = new CitizensManipulate(this);
@@ -1390,6 +1404,17 @@ public final class MainManager extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onPlayerItemConsume(PlayerItemConsumeEvent event){
+        if(event.getItem()!=null && event.getItem().getType()==Material.DRIED_KELP){
+            ItemStack item = event.getItem();
+            if(item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData()==1){
+                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED,20*40,2,true,false));
+                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP,20*40,0,true,false));
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlayerDamage(EntityDamageEvent event){
         if(event.getEntity() instanceof Player){
             Player player = (Player)event.getEntity();
@@ -1567,6 +1592,32 @@ public final class MainManager extends JavaPlugin implements Listener {
                 }
 
 
+            }
+        }
+
+        if(event.getAction()==Action.RIGHT_CLICK_BLOCK){
+            if(event.getItem()!=null && event.getItem().getType()==Material.PAPER && event.getItem().getItemMeta().hasCustomModelData()){
+                if(event.getItem().getItemMeta().getCustomModelData()==2){
+                    releaseFunSnap(event.getPlayer());
+                }
+            }
+        }
+    }
+
+    private void releaseFunSnap(Player player) {
+        player.damage(2);
+        player.getWorld().playSound(player.getLocation(),Sound.ENTITY_GENERIC_EXPLODE,SoundCategory.PLAYERS,1,2);
+        player.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL,player.getLocation(),0,0,0,1);
+        Location behindPlayer = Utility.getPositionBehindHead(player);
+        Vector direction = behindPlayer.toVector().subtract(player.getLocation().toVector()).normalize();
+        Random random = new Random();
+        float randomFloat = random.nextFloat(1.05f,1.3f);
+        player.setVelocity(direction.multiply(randomFloat));
+        if(player.getInventory().getItemInMainHand().getType()==Material.PAPER){
+            player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);
+        }else{
+            if(player.getInventory().getItemInOffHand().getType()==Material.PAPER){
+                player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);
             }
         }
     }

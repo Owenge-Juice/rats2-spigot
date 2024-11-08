@@ -129,3 +129,39 @@ commands:
   summon_tiny_spider_here:
     description: asdf
     permission: op
+  inspector_crash:
+    description: asdf
+    permission: op
+  inspector_doorbell:
+    description: asdf
+    permission: op
+  inspector_dialogue_1:
+    description: asdf
+    permission: op
+  inspector_dialogue_2:
+    description: asdf
+    permission: op
+  inspector_dialogue_3:
+    description: asdf
+    permission: op
+  inspector_dialogue_4:
+    description: asdf
+    permission: op
+  declan_1:
+    description: asdf
+    permission: op
+  declan_2:
+    description: asdf
+    permission: op
+  give_sugar_cube:
+    description: asdf
+    permission: op
+  give_funsnap:
+    description: asdf
+    permission: op
+  give_lockpick:
+    description: asdf
+    permission: op
+  reauthor_book:
+    description: asdf
+    permission: op
