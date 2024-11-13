@@ -94,10 +94,10 @@ public class Radio {
             bukkitTask.cancel();
         }
 
-        int randomInt = random.nextInt(75);
+        int randomInt = random.nextInt(90);
         Utility.sendMessageToAllAdmins(randomInt+"");
         //0-19
-        if(randomInt<=19){
+        if(randomInt<=16){
             if(lastPlayedSong==1){
                 playSong();
             }else{
@@ -105,7 +105,7 @@ public class Radio {
                 location.getWorld().playSound(location,"rats2:powevents.sound.radiosong1",SoundCategory.RECORDS,0.5f,1f);
                 cueStop((95)*20);
             }
-        }else if(randomInt<=39){
+        }else if(randomInt<=32){
             if(lastPlayedSong==2){
                 playSong();
             }else{
@@ -114,7 +114,7 @@ public class Radio {
                 cueStop((113)*20);
             }
 
-        }else if(randomInt<=59){
+        }else if(randomInt<=48){
             if(lastPlayedSong==3){
                 playSong();
             }else{
@@ -124,31 +124,31 @@ public class Radio {
             }
 
             //Unlock below oe closer to christmas
-        }else if(randomInt<=0){
+        }else if(randomInt<=64){
             if(lastPlayedSong==4){
                 playSong();
             }else{
                 lastPlayedSong=4;
 
-                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong6",SoundCategory.RECORDS,0.5f,1f);
-                cueStop(((1*60)+(52))*20);
+                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong4",SoundCategory.RECORDS,0.5f,1f);
+                cueStop((143)*20);
             }
 
-        }else if(randomInt<=69){
+        }else if(randomInt<=80){
             if(lastPlayedSong==7){
                 playSong();
             }else{
                 lastPlayedSong=7;
-                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong7",SoundCategory.RECORDS,0.5f,1f);
-                cueStop(((0*60)+(39))*20);
+                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong6",SoundCategory.RECORDS,0.5f,1f);
+                cueStop((116)*20);
             }
         }else{
             if(lastPlayedSong==4){
                 playSong();
             }else{
                 lastPlayedSong=4;
-                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong4",SoundCategory.RECORDS,0.5f,1f);
-                cueStop((143)*20);
+                location.getWorld().playSound(location,"rats2:powevents.sound.radiosong7",SoundCategory.RECORDS,0.5f,1f);
+                cueStop((39)*20);
             }
         }
     }

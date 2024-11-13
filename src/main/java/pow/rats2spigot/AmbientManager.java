@@ -1,9 +1,6 @@
 package pow.rats2spigot;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -12,6 +9,7 @@ import pow.rats2spigot.util.Utility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class AmbientManager {
 
@@ -20,7 +18,9 @@ public class AmbientManager {
     ArrayList<AmbientRunnable> ambientRunnables = new ArrayList<>();
 
     HashMap<String,Boolean> basementPlayerMap = new HashMap<>();
+    HashMap<String,Boolean> blithersPlayerMap = new HashMap<>();
     HashMap<String,Boolean> boilerroomPlayerMap = new HashMap<>();
+
 
     public AmbientManager(MainManager mainManager) {
         this.mainManager = mainManager;
@@ -41,14 +41,48 @@ public class AmbientManager {
         if(!basementPlayerMap.get(player.getName())){
             player.playSound(player,"rats2:powevents.sound.ambient_basement",SoundCategory.AMBIENT,0.6f,1);
             basementPlayerMap.replace(player.getName(),true);
-
             BukkitTask bukkitTask = new BukkitRunnable(){
                 @Override
                 public void run(){
                     basementPlayerMap.replace(player.getName(),false);
                 }
             }.runTaskLater(mainManager,2*60*20);
+
+            Random random = new Random();
+            BukkitTask bukkitTask2 = new BukkitRunnable(){
+                @Override
+                public void run(){
+                    if(random.nextBoolean()){
+                        if(basementPlayerMap.get(player.getName())){
+                            Location location = player.getLocation().clone();
+                            location.add(0.5,2,0.5);
+                            if(player.getGameMode()== GameMode.SURVIVAL){
+                                mainManager.summonTinySpiderAtLoc(location,2);
+                            }
+                        };
+                    }
+                }
+            }.runTaskLater(mainManager,1*45*20);
         }
+    }
+
+    public void checkBlithersAmbience(Player player){
+        if(!blithersPlayerMap.containsKey(player.getName())){
+            blithersPlayerMap.put(player.getName(),false);
+        }
+
+        if(!blithersPlayerMap.get(player.getName())){
+            player.playSound(mainManager.getBlithersLocation(),"rats2:powevents.sound.ambient_blithers",SoundCategory.AMBIENT,0.1f,1);
+            blithersPlayerMap.replace(player.getName(),true);
+
+            BukkitTask bukkitTask = new BukkitRunnable(){
+                @Override
+                public void run(){
+                    blithersPlayerMap.replace(player.getName(),false);
+                }
+            }.runTaskLater(mainManager,65*20);
+        }
+
     }
 
     public void checkBoilerroomAmbience(Player player){

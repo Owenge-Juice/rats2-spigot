@@ -41,7 +41,9 @@ public class DayTimeRunnable extends BukkitRunnable {
 
     public void dayBreak(){
         Utility.sendMessageToAllAdmins("starting dayBreak");
-        mainManager.setDayTimeLights();
+        mainManager.randomiseTradeNumber();
+
+
         mainManager.turnAllStoveTopsOn();
         mainManager.populateCheese(5);
         Bukkit.getServer().getScoreboardManager().getMainScoreboard().getObjective("config").getScore("night").setScore(0);
@@ -50,7 +52,7 @@ public class DayTimeRunnable extends BukkitRunnable {
         BukkitTask bukkitTask = new BukkitRunnable() {
             @Override
             public void run() {
-
+                mainManager.setDayTimeLights();
                 mainManager.getCatcherManager().summonAllCatchers();
                 mainManager.setUpDay(mainManager.getCurrentIRLDay());
                 mainManager.updateAllDoors();
@@ -60,14 +62,14 @@ public class DayTimeRunnable extends BukkitRunnable {
 
     public void sunset(){
         Utility.sendMessageToAllAdmins("starting sunset");
-        mainManager.setNightTimeLights();
+
         mainManager.turnAllStoveTopsOff();
         Bukkit.getServer().getScoreboardManager().getMainScoreboard().getObjective("config").getScore("night").setScore(1);
 
         BukkitTask bukkitTask = new BukkitRunnable() {
             @Override
             public void run() {
-
+                mainManager.setNightTimeLights();
                 mainManager.getCatcherManager().summonAllCatchers();
                 mainManager.setUpDay(mainManager.getCurrentIRLDay());
                 mainManager.updateAllDoors();

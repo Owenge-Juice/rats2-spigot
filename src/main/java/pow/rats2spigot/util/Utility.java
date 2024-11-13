@@ -5,6 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.json.JSONObject;
 import pow.rats2spigot.MainManager;
@@ -13,6 +15,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class Utility {
@@ -22,6 +25,7 @@ public class Utility {
                 player.sendMessage(message);
             }
         }
+        System.out.println(message);
     }
     // Method to retrieve the word by name from the file
     public static String getNewNameFromFile(UUID playerUuid) {
@@ -45,6 +49,22 @@ public class Utility {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void cueSubtitlesForPlayers(ArrayList<Player> players,String s, long i,String sound,MainManager mainManager){
+        for(Player player : players){
+            cueSubtitle(player, s, i, sound, mainManager);
+        }
+    }
+
+    public static void cueSubtitle(Player playerScanned, String s, long i,String sound,MainManager mainManager) {
+        BukkitTask bukkitTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                playerScanned.sendMessage(s);
+                playerScanned.playSound(playerScanned,sound,1,1);
+            }
+        }.runTaskLater(mainManager, i);
     }
 
     public static void poofBlock(Location givenLocation){

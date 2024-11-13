@@ -165,3 +165,39 @@ commands:
   reauthor_book:
     description: asdf
     permission: op
+  clean_dialogue_1:
+    description: asdf
+    permission: op
+  clean_dialogue_2:
+    description: asdf
+    permission: op
+  clean_dialogue_3:
+    description: asdf
+    permission: op
+  give_resize_potion:
+    description: asdf
+    permission: op
+  slow_mode:
+    description: Used to turn slowmode on and off for the lights in the house
+  reset_street_npcs:
+    description: Reset all street npcs outside the hotel
+  hamrat_invisible:
+    description: asdf
+  hamrat_un_invisible:
+    description: asdf
+  frog:
+    description: Spawn a frog with a name on it! (Only use during the Love Tropics Event)
+  quest:
+    description: Spawn this to mark the area of a quest
+  web_bossbar_start:
+    permission: op
+    description: asdf
+  summonBossSpider:
+    permission: op
+    description: asdf
+  summon_tiny_horses:
+    permission: op
+    description: asdf
+  newrats_dialogue_1:
+    permission: op
+    description: asdf

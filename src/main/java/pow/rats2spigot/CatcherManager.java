@@ -11,6 +11,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import pow.rats2spigot.util.Utility;
 
 import java.util.*;
 
@@ -39,6 +40,14 @@ public class CatcherManager {
         namesOfCatchers.add("widow_oldest_child");
         namesOfCatchers.add("youngest_child");
         namesOfCatchers.add("wife");
+        namesOfCatchers.add("dev");
+        namesOfCatchers.add("dv8fromthecode");
+        namesOfCatchers.add("crissy");
+        namesOfCatchers.add("candy");
+        namesOfCatchers.add("dev_copy");
+        namesOfCatchers.add("dv8fromthecode_copy");
+        namesOfCatchers.add("crissy_copy");
+        namesOfCatchers.add("candy_copy");
 
         catcherSpawnDayLocations.clear();
         catcherSpawnNightLocations.clear();
@@ -48,42 +57,67 @@ public class CatcherManager {
         catcherSpawnNightLocations.put("boilerman", "53 -55 -134");
         catcherSpawnDayLocations.put("owner", "-65 -55 -40");
         catcherSpawnNightLocations.put("owner", "-65 -55 -40");
-        catcherSpawnDayLocations.put("gom", "51 -45 -148");
-        catcherSpawnNightLocations.put("gom", "-62 -24 -75");
-        catcherSpawnDayLocations.put("youngest_child", "-49 -45 -41");
-        catcherSpawnNightLocations.put("youngest_child", "66 -24 -115");
+        catcherSpawnDayLocations.put("gom", "-53 -24 -36");
+        catcherSpawnNightLocations.put("gom", "-58 -24 -72");
+        catcherSpawnDayLocations.put("youngest_child", "73 -24 -105");
+        catcherSpawnNightLocations.put("youngest_child", "65 -24 -116");
         catcherSpawnDayLocations.put("owners_son", "42 -45 -46");
-        catcherSpawnNightLocations.put("owners_son", "42 -45 -46");
+        catcherSpawnNightLocations.put("owners_son", "64 -24 -45");
         catcherSpawnDayLocations.put("bach", "-35 -24 -168");
-        catcherSpawnNightLocations.put("bach", "-2 -55 -55");
+        catcherSpawnNightLocations.put("bach", "-3 -55 -46");
         catcherSpawnDayLocations.put("widow_oldest_child", "63 -35 -156");
-        catcherSpawnNightLocations.put("widow_oldest_child", "-25 -45 -109");
+        catcherSpawnNightLocations.put("widow_oldest_child", "63 -24 -129");
         catcherSpawnDayLocations.put("evil_brother", "89 -45 -64");
-        catcherSpawnNightLocations.put("evil_brother", "92 -45 -45");
-        catcherSpawnDayLocations.put("husband", "45 -23 -89");
-        catcherSpawnNightLocations.put("husband", "-41 -24 -137");
+        catcherSpawnNightLocations.put("evil_brother", "82 -45 -121");
+        catcherSpawnDayLocations.put("husband", "-42 -24 -76");
+        catcherSpawnNightLocations.put("husband", "-41 -24 -139");
 
-        catcherSpawnDayLocations.put("widow", "92 -24 -136");
-        catcherSpawnNightLocations.put("widow", "65 -24 -140");
+        catcherSpawnDayLocations.put("widow", "85 -24 -112");
+        catcherSpawnNightLocations.put("widow", "66 -24 -140");
 
-        catcherSpawnDayLocations.put("scientist", "48 -45 -164");
-        catcherSpawnNightLocations.put("scientist", "-92 -52 -92");
+        catcherSpawnDayLocations.put("scientist", "-58 -24 -164");
+        catcherSpawnNightLocations.put("scientist", "69 -45 -164");
 
-        catcherSpawnDayLocations.put("safety_inspector", "-36 -54 13");
+        catcherSpawnDayLocations.put("safety_inspector", "-99 -52 -275");
         catcherSpawnNightLocations.put("safety_inspector", "14 -47 -349");
 
         catcherSpawnDayLocations.put("evil_sister", "90 -45 -78");
         catcherSpawnNightLocations.put("evil_sister", "90 -45 -78");
 
-        catcherSpawnNightLocations.put("wife", "-36 -24 -140");
-        catcherSpawnDayLocations.put("wife", "46 -23 -88");
+        catcherSpawnNightLocations.put("wife", "-39 -24 -140");
+        catcherSpawnDayLocations.put("wife", "-26 -24 -83");
+
+
+        catcherSpawnNightLocations.put("dev", "7 -45 -59");
+        catcherSpawnDayLocations.put("dev", "-37 -44 -130");
+
+        catcherSpawnNightLocations.put("dv8fromthecode", "-47 -24 -154");
+        catcherSpawnDayLocations.put("dv8fromthecode", "63 -44 -120");
+
+        catcherSpawnNightLocations.put("crissy", "94 -24 -153");
+        catcherSpawnDayLocations.put("crissy", "13 -46 -131");
+
+        catcherSpawnNightLocations.put("candy", "-5 -24 -43");
+        catcherSpawnDayLocations.put("candy", "70 -45 -88");
+
+        catcherSpawnNightLocations.put("dev_copy", "113 -55 -104");
+        catcherSpawnDayLocations.put("dev_copy", "113 -55 -104");
+
+        catcherSpawnNightLocations.put("dv8fromthecode_copy", "40 -55 -162");
+        catcherSpawnDayLocations.put("dv8fromthecode_copy", "40 -55 -162");
+
+        catcherSpawnNightLocations.put("crissy_copy", "-67 -55 -72");
+        catcherSpawnDayLocations.put("crissy_copy", "-67 -55 -72");
+
+        catcherSpawnNightLocations.put("candy_copy", "40 -55 -76");
+        catcherSpawnDayLocations.put("candy_copy", "40 -55 -76");
 
 
         BukkitTask bukkitTask = new BukkitRunnable() {
             @Override
             public void run() {
                 clearAllCatchers();
-                System.out.println("Spawning Catchers");
+                Utility.sendMessageToAllAdmins("Spawning Catchers");
                 catcherRunnable = new CatcherRunnable(mainManager);
 
                 summonAllCatchers();
@@ -136,10 +170,16 @@ public class CatcherManager {
 
     public void summonCatcher(String name){
         String stringToRun;
+        String nameAfterCut = name;
+
+        if (name.endsWith("_copy")) {
+             nameAfterCut = name.substring(0, name.length() - "_copy".length());
+        }
+
         if(mainManager.isNight()){
-            stringToRun = "ratsmp2_forgenpc:" + name + "_catcher " + catcherSpawnNightLocations.get(name);
+            stringToRun = "ratsmp2_forgenpc:" + nameAfterCut + "_catcher " + catcherSpawnNightLocations.get(name);
         }else{
-            stringToRun = "ratsmp2_forgenpc:" + name + "_catcher " + catcherSpawnDayLocations.get(name);
+            stringToRun = "ratsmp2_forgenpc:" + nameAfterCut + "_catcher " + catcherSpawnDayLocations.get(name);
         }
 
         //System.out.println(stringToRun);
@@ -169,16 +209,16 @@ public class CatcherManager {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "scale set pehkui:height 2 "+summonedCatcher.getUniqueId());
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "scale set pehkui:width 2 "+summonedCatcher.getUniqueId());
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "scale set pehkui:motion 0.8 "+summonedCatcher.getUniqueId());
-            setHeightOfCatcher(name,summonedCatcher.getUniqueId());
+            setHeightOfCatcher(nameAfterCut,summonedCatcher.getUniqueId());
             //mainManager.getWorld().setGameRule(GameRule.SEND_COMMAND_FEEDBACK,true);
 
             summonedCatcher.getScoreboardTags().add("catcher");
             summonedCatcher.getScoreboardTags().remove("UnprocessedCatcher");
             ((LivingEntity)summonedCatcher).addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING,-1,1,false,false));
             summonedCatcher.setInvulnerable(true);
-            summonedCatcher.getScoreboardTags().add(name);
+            summonedCatcher.getScoreboardTags().add(nameAfterCut);
             summonedCatcher.setPersistent(true);
-            switch (name){
+            switch (nameAfterCut){
                 case "owner":
                     summonedCatcher.setCustomName("Delroy LaRue");
                     break;
@@ -215,11 +255,17 @@ public class CatcherManager {
                 case "wife":
                     summonedCatcher.setCustomName("Ái Shikongo");
                     break;
-                case "husband":
-                    summonedCatcher.setCustomName("Destin Shikongo");
+                case "dev":
+                    summonedCatcher.setCustomName("Dev");
                     break;
-                case "boilerman":
-                    summonedCatcher.setCustomName("Faron");
+                case "dv8fromthecode":
+                    summonedCatcher.setCustomName("Dv8FromTheCode");
+                    break;
+                case "crissy":
+                    summonedCatcher.setCustomName("Crissy");
+                    break;
+                case "candy":
+                    summonedCatcher.setCustomName("Candy");
                     break;
             }
         }else{
@@ -270,10 +316,12 @@ public class CatcherManager {
                 Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),"scale multiply pehkui:width 0.8 "+uniqueId);
                 break;
             case "husband":
-                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),"scale multiply pehkui:height 1.05  "+uniqueId);
+                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),"scale multiply pehkui:height 1.05 "+uniqueId);
                 break;
             case "boilerman":
                 Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(),"scale multiply pehkui:height 0.8 "+uniqueId);
+                break;
+            default:
                 break;
         }
     }
@@ -283,6 +331,7 @@ public class CatcherManager {
         for(Map.Entry<String, String> entry : catcherSpawnDayLocations.entrySet()){
             summonCatcher(entry.getKey());
         }
+
     }
 
 }

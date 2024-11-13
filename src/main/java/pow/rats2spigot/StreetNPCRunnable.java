@@ -24,13 +24,21 @@ public class StreetNPCRunnable extends BukkitRunnable {
     //ran every 5 seconds
     @Override
     public void run() {
+        //If the NPC is currently walking
         if(streetNPC.isWalking()){
+            //Get the location that they are headed
             Location destinationLocation = streetNPC.getDestinationStreetCorner();
+            //If they are within 3 blocks of that location
             if(destinationLocation.distance(streetNPC.getNpc().getStoredLocation())<3){
-                mainManager.getCitizensManipulate().makeNPCWalk(streetNPC);
+                //Make them start walking again
+                if(!mainManager.getCitizensManipulate().makeNPCWalk(streetNPC)){
+                    bukkitTask.cancel();
+                }
+
             }
         }
 
+        //Despawn checker
         for (NPC npc : CitizensAPI.getNPCRegistry()) {
             // Check if the NPC is spawned and in the specified world
             if (npc.isSpawned() && npc.getEntity().getWorld().equals(mainManager.getWorld())) {

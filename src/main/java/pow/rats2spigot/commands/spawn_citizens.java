@@ -22,7 +22,7 @@ public class spawn_citizens implements CommandExecutor {
 
         Utility.sendMessageToAllAdmins("Spawning street npcs");
         mainManager.getCitizensManipulate().spawnCitizens();
-        mainManager.getCitizensManipulate().startCitizensWalking(30);
+        mainManager.getCitizensManipulate().startCitizensWalking(50);
 
         return true;
     }

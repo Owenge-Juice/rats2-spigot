@@ -24,7 +24,8 @@ public class give_lockpick implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         Player player = (Player)commandSender;
-
+        player.sendMessage("Did you mean to run this?\nThis was a test command left in by Owen, if you're looking for how to get an actual lockpick, you need to give yourself the 'Paperclip' item with the give command.");
+        /*
         ItemStack lockPick = new ItemStack(Material.IRON_NUGGET);
         ItemMeta meta = lockPick.getItemMeta();
         meta.setCustomModelData(1);
@@ -33,7 +34,7 @@ public class give_lockpick implements CommandExecutor {
         lockPick.setItemMeta(meta);
 
         player.getInventory().addItem(lockPick);
-
+*/
         return true;
     }
 

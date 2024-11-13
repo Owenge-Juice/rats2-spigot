@@ -34,14 +34,15 @@ public class CitizensManipulate {
 
         Location location = new Location(mainManager.getWorld(),20, -48, 36);
         location.getChunk().load();
-
-        BukkitTask bukkitTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                clearAllNPCs(true);
-                setUpCitizensManipulate();
-            }
-        }.runTaskLater(mainManager, 100); // 100 ticks = 5 seconds
+        setUpCitizensManipulate();
+//        BukkitTask bukkitTask = new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                hardClearAllNPCs();
+//                //clearAllNPCs(true);
+//
+//            }
+//        }.runTaskLater(mainManager, 100); // 100 ticks = 5 seconds
     }
 
     public ArrayList<Entity> getAllValidStreetNPCEntities(){
@@ -124,15 +125,24 @@ public class CitizensManipulate {
 
         makeNPCTeam();
 
-        BukkitTask bukkitTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                spawnCitizens();
-                System.out.println("Spawning citizens");
-                Utility.sendMessageToAllAdmins("Spawning citizens, there may be a small lag spike");
-                startCitizensWalking(30);
-            }
-        }.runTaskLater(mainManager, 1*60*20); // 1 minute
+//        BukkitTask bukkitTask = new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                spawnCitizens();
+//                System.out.println("Spawning citizens");
+//                Utility.sendMessageToAllAdmins("Spawning citizens, there may be a small lag spike");
+//                startCitizensWalking(30);
+//            }
+//        }.runTaskLater(mainManager, 10*20);
+//
+//
+//        BukkitTask bukkitTask2 = new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                System.out.println("Done making citizens walk");
+//                Utility.sendMessageToAllAdmins("Done making citizens walk");
+//            }
+//        }.runTaskLater(mainManager, (20L * 31)+100);
     }
 
     private void makeNPCTeam() {
@@ -274,65 +284,72 @@ public class CitizensManipulate {
         npcs.add(new StreetNPC("43","http://textures.minecraft.net/texture/ff17e81f379eed337f55f857f035717ff1082b223e1e77d9a19fbd02d206d84b","ewogICJ0aW1lc3RhbXAiIDogMTcyOTAwNDgyMDAxMiwKICAicHJvZmlsZUlkIiA6ICIxYjQwYzcxMGZjMTY0NmQ2OTIxOTVmYzY3YzZlMTE0ZCIsCiAgInByb2ZpbGVOYW1lIiA6ICJ3c3pvbHNvbiIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9mZjE3ZTgxZjM3OWVlZDMzN2Y1NWY4NTdmMDM1NzE3ZmYxMDgyYjIyM2UxZTc3ZDlhMTlmYmQwMmQyMDZkODRiIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=","vjoIz6moPcrCTWvE+Hr7LX3l1Z+R7oIiJsWiTOkSB6G5blIaiAknwV1u1YiM3SK8VFye+aBEQCstGNk2uOai/2/SFrtQ76m+N32AcLyURAABxMV/eyXheYCvMYHdO+egt2bNfwE1c/EXU8L+pAdX6gGJU1kFzZOi7rIRkXOWj9UuWwSiY9jjG2aVk9OlkezuKzj4zdlUVAISS+hmJaI+wVvxbkxrNg0HURZEbiS9NsPG5a+CtCzr7bZjcbN0LcwaMWHMiBIn1f6qiLC2tTcJ++AGiXVGg6sxA7KTWZwvDoFCdLL4dhGnNbWiId6+QOV23FxUhts4Jfr3gyYvzGs63LgPotmxCWQh2FU13tbB7YcmxrfDtYfo1rhvG2RWMe8DH/iPzvqCh+uCQnAEA+ZKA7mlyg6PELhBMH5rtYh/TRVnXWHPYmBlD8vJ6WBlNkYZ4BePfWMgAthp9LzMYT5hc9/Z53gG7BvSmBaeg5cAmbOC3292lVzZzn8mTslj91OGTRXAW/MG8myMbHoEhfrz4yK7AW55PP+i66Tr+/Q0L2EknfnvI87RYj/thy150lPfJ6uhkUYkiYGFGlCIPuXxxkATXuXzuiMt0WsNhxZHPF5KK04qHvx3X0DzRGu5odO/TXDiA61HnPOQ8vLRW3eeYRJYWHuhmul6Oao+drWuyEI=",mainManager));
         npcs.add(new StreetNPC("44","http://textures.minecraft.net/texture/6362184751d071c17d3b0c6de0fc3438f70ac088c4d8d3e33622b99f428896e9","ewogICJ0aW1lc3RhbXAiIDogMTcyOTAwNDg0OTYzNiwKICAicHJvZmlsZUlkIiA6ICJiNWI4ZTljMDlhN2U0MTQ2YjBlYTE0NmFmYWUwMjI5YiIsCiAgInByb2ZpbGVOYW1lIiA6ICJ3b2xmZnkyMyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82MzYyMTg0NzUxZDA3MWMxN2QzYjBjNmRlMGZjMzQzOGY3MGFjMDg4YzRkOGQzZTMzNjIyYjk5ZjQyODg5NmU5IiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=","LzLInURHPWl+OAfeJep0pWJ7TDeZJqOcA/aRR0nkGvxJ/kZmThIysNSv6zdGOj3GzmumiKpUJgahzKStIfNushYbwovvkHBx9EahKccdO+N6xNLnwRmoGjee8o/wkfx2+9jppW5Q//lWuYSUyaSBnRoLR4gA1Pe86nde7iY0mobKlbPJfdN9lXUq7zzEkqKpmv9N3S8v99OpuxS79DL6LQ+3oVcI8y+o4VyFlI+mSgqm/RcyVNkHhmnBRsoNXkLXLbOVzrwMse2zTw1ttexNO+5dkKm1UVmkK0IWwXjc+7RmO+3J6kI5TxfRLIvUsqK6Twphri7BcQNBSq3/42HRiFIG5qK35f+BjjFyzwHFh+d6ipgYNyYO2Hsb9m5KxCcCCbZN5slTsio7qKwIayWGo3yhl3/0cTeiL/HG+ovG5QZIQWdnC9JPRtX5Ey6Z3U5AZhZkrTDIgnTGADASGRkTWw+4IH6PKUeUnejlb3IFknMrYXiR0w/xtKI6xb4IE4gwfWBjvRmjiiamqEnj8O7nCHkD6C6TKHjm6trQnFcTugO5LDocIW2hCwLQcuZxotAgG4Mnwao2wDYr/vgjDu7CpZ45XLGPmCChPqyR9tVUw3W4zGITrrkB4bINrC1T+k8C/W4t2PZCThBbpw9Cryr3qj3q7LFQDP34EkDTMUe8aZk=",mainManager));
         npcs.add(new StreetNPC("45","http://textures.minecraft.net/texture/ddc2871dc3a3bf4709ccc8130af529fc494bd3f5c39501ff3ad8ff1492e8cf3","ewogICJ0aW1lc3RhbXAiIDogMTcyOTAwNDg3NzM5NiwKICAicHJvZmlsZUlkIiA6ICIxYjQ5NzZjMDNiNTQ0ZDFlYTA4Njk2ZDMwNjZhZTczOCIsCiAgInByb2ZpbGVOYW1lIiA6ICJTaXJfQXRoYWxvcyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9kZGMyODcxZGMzYTNiZjQ3MDljY2M4MTMwYWY1MjlmYzQ5NGJkM2Y1YzM5NTAxZmYzYWQ4ZmYxNDkyZThjZjMiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==","NmiUuQdOYNcHdL4LPfBbuhhQbZJ5WRD+IfTC3Le+KPb+MT80jfJDn4v7ls3rGKa2zrNZUdHwAlh3IrvfOiArvKEJzvM/HfCcdxRYDH8RVq4BJXBaH3KrOioFjEVo/s/+HikTXLqmau/YhGyGVgDLi7C956PEQc/QLVhdAz50FEl5FMiWvrJbxiIJ+BLhbXkIGSDoGlUn4U5TwpsZf4yVwHm48/7d8Uwh7bq8Ate+hKFhnWZ/lx02Ej8owUu4FHJpylVgeyCT7DAOa7r62Nv27z04YI2SMKWrI+p4G2Z7SisoHB35SURv059q0TIFbN9UMncjQpSsci8pVzEczzSX+PyPve+L3NlwrPHbgPItvmBYxQnnMj7RfCU8sdGD+uhjX/aOuhAmokNOFQtsRc6bkEZ3PpwV9zbxP38qZ7H7lYcFSr58M++pkfAU+Ql5+gbmFHWEs1EJ+0Wrfgm/TgOKSCh+PkvvGw2nKCAPWUh4ouvFYCTIQKTqICaMeAtOfDXD5W1uMztX5RdNZIqZPzOk5AB+O+m6u0Gav1Q3CyK4VAI17VWGq40/FEatCiGpIVpg6wgpBr5yhwTkazgxT5qSMD4KGtW9CUgaEEL/Qjg2QwKPgH9hM4W3jNROmQy9LcrPTaPwL+256u82e3TEWU65zITQEBTKrfxZqL0Ayke9zZ8=",mainManager));
-
+        //npcs.add(new StreetNPC("","","","",mainManager));
 
 
         npcsNotWalking.clear();
         npcsNotWalking.addAll(npcs);
+
+        mainManager.setCitizensCleared(false);
     }
 
     public void startNPCWalk(){
         Utility.sendMessageToAllAdmins("starting NPC walk!");
+
         if(!npcsNotWalking.isEmpty()){
+            if(!mainManager.isCitizensCleared()){
 
-            Random random = new Random();
+                Random random = new Random();
 
-            //Choose a random NPC
-            int randomIndex = random.nextInt(npcsNotWalking.size());
-            StreetNPC streetNPC = npcsNotWalking.get(randomIndex);
-            streetNPC.setWalking(true);
-            npcsNotWalking.remove(streetNPC);
+                //Choose a random NPC
+                int randomIndex = random.nextInt(npcsNotWalking.size());
+                StreetNPC streetNPC = npcsNotWalking.get(randomIndex);
+                streetNPC.setWalking(true);
+                npcsNotWalking.remove(streetNPC);
 
-            NPC npc = streetNPC.getNpc();
+                NPC npc = streetNPC.getNpc();
 
-            //Choose a random starting point
-            Location pointA;
-            pointA=getRandomStreetCorner();
+                //Choose a random starting point
+                Location pointA;
+                pointA=getRandomStreetCorner();
 
-            //Teleport them to that starting point
-            npc.teleport(pointA, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                //Teleport them to that starting point
+                npc.teleport(pointA, PlayerTeleportEvent.TeleportCause.PLUGIN);
 
-            //Give them a location to walk too
-            //Location pointB = getRandomAdjacentStreetCorner(pointA);
-            int index = streetCornerLocations.indexOf(pointA);
-            if(streetNPC.isClockwise()){
-                index+=1;
-                if(index>=streetCornerLocations.size()){
-                    index=0;
+                //Give them a location to walk too
+                //Location pointB = getRandomAdjacentStreetCorner(pointA);
+                int index = streetCornerLocations.indexOf(pointA);
+                if(streetNPC.isClockwise()){
+                    index+=1;
+                    if(index>=streetCornerLocations.size()){
+                        index=0;
+                    }
+                }else{
+                    index-=1;
+                    if(index<=-1){
+                        index=streetCornerLocations.size()-1;
+                    }
                 }
-            }else{
-                index-=1;
-                if(index<=-1){
-                    index=streetCornerLocations.size()-1;
+                Location pointB = streetCornerLocations.get(index);
+
+                int randomWeight = random.nextInt(10);
+                //Flip the rotation of the street npc for variety
+                if(randomWeight==0){
+                    streetNPC.setClockwise(!streetNPC.isClockwise());
                 }
+
+                streetNPC.setDestinationStreetCorner(pointB);
+
+                // Make the NPC walk to the target location
+                npc.getNavigator().setTarget(pointB);
+
+                //Add npc to the team for no names
+                npcTeam.addEntry(npc.getEntity().getName());
             }
-            Location pointB = streetCornerLocations.get(index);
-
-            int randomWeight = random.nextInt(10);
-            //Flip the rotation of the street npc for variety
-            if(randomWeight==0){
-                streetNPC.setClockwise(!streetNPC.isClockwise());
-            }
-
-            streetNPC.setDestinationStreetCorner(pointB);
-
-            // Make the NPC walk to the target location
-            npc.getNavigator().setTarget(pointB);
-            npcTeam.addEntry(npc.getEntity().getName());
         }
     }
 
-    public void makeNPCWalk(StreetNPC streetNPC) {
+    public boolean makeNPCWalk(StreetNPC streetNPC) {
         Random random = new Random();
 
         NPC npc = streetNPC.getNpc();
@@ -364,14 +381,17 @@ public class CitizensManipulate {
             // Make the NPC walk to the target location
             npc.getNavigator().setTarget(pointB);
             npcTeam.addEntry(npc.getEntity().getName());
+            return true;
         }else{
-            System.out.println("ERROR: NPC is not spawned");
+            Utility.sendMessageToAllAdmins("ERROR: NPC is not spawned");
+            return false;
         }
     }
 
     public void hardClearAllNPCs(){
         npcRegistry.deregisterAll();
         npcRegistry.despawnNPCs(DespawnReason.REMOVAL);
+        mainManager.setCitizensCleared(true);
     }
 
     public void clearAllNPCs(boolean enabling){

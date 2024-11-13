@@ -5,10 +5,14 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Powerable;
 import org.bukkit.block.data.Rail;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -16,18 +20,13 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
+import org.bukkit.potion.*;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.*;
 import org.bukkit.util.Vector;
 import pow.rats2spigot.build.BasementDoor;
 import pow.rats2spigot.build.Door;
@@ -58,11 +57,14 @@ public final class MainManager extends JavaPlugin implements Listener {
     private Location basementDoorTemplate;
     private StoveManager stoveManager;
     private ArrayList<Material> bedTypes = new ArrayList<>();
+    private Location boilerManLocation1;
+    private Location boilerManLocation2;
     private ArrayList<Tap> taps = new ArrayList<>();
     private TickRunnable tickRunnable;
     private HalloweenRunnable halloweenRunnable;
     private BukkitTask catDiscEvent = null;
     private ArrayList<Location> stoveTops = new ArrayList<>();
+    ArrayList<RideableArmourStand> rideableArmourStandsToRemove = new ArrayList<>();
     private final HashMap<Integer,Door> doorIndex = new HashMap<>();
     private final HashMap<Integer,Boolean> openIndex = new HashMap<>();
     private AmbientManager ambientManager;
@@ -89,14 +91,48 @@ public final class MainManager extends JavaPlugin implements Listener {
     private Radio radio;
     private ArrayList<Material> cookableItems = new ArrayList<>();
     private Location teleportLocation;
+    private Location AFKTeleportLocation;
     private Team mainTeam;
+    private boolean citizensCleared;
+    private int hamratSongIndex = 0;
+    private int hamratNarrationIndex = 0;
+    private Location hamratSoundLocation;
+    private HashMap<Integer,String> hamratSongHashmap = new HashMap<>();
+    private Location blithersLocation;
+    private ArrayList<ArmorStand> questMarkers = new ArrayList<>();
+    private int questMarkerTimer = 0;
+    private BossBar webBossbar;
+    private int minutesUntilWebEviction = 15;
+    private int secondsUntilWebEviction = 00;
 
+    private Location wire1;
+    private Location wire2;
+
+    private int unstablePotionTimer;
+
+    private ArrayList<RideableArmourStand> rideableArmourStands = new ArrayList<>();
 
     @Override
     public void onDisable() {
+        webBossbar.setVisible(false);
         ambientManager.stopAllAmbientRunnables();
         removeAllTaps();
         citizensManipulate.packDownCitizensManipulate();
+
+        ArrayList<Entity> entitiesToRemove = new ArrayList<>();
+        for(Entity entity : getWorld().getEntities()){
+            if(entity instanceof WanderingTrader){
+                entitiesToRemove.add(entity);
+            }
+        }
+
+        for(RideableArmourStand rideableArmourStand : rideableArmourStands){
+            rideableArmourStand.cleanUp();
+        }
+
+        for(Entity entity : entitiesToRemove){
+            entity.remove();
+        }
     }
 
 
@@ -104,12 +140,26 @@ public final class MainManager extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         lastMessageSent = new HashMap<>();
+        citizensCleared = true;
         loadChunks();
 
         mainTeam = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("main");
         if(mainTeam==null){
             mainTeam = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("main");
         }
+
+        hamratSongHashmap.put(1,"The farewell (slow)");
+        hamratSongHashmap.put(2,"Wedding feast");
+        hamratSongHashmap.put(3,"Wedding feast (slow)");
+        hamratSongHashmap.put(4,"The farewell");
+        hamratSongHashmap.put(5,"Wedding feast (slow)");
+        hamratSongHashmap.put(6,"Record Scratch");
+        hamratSongHashmap.put(7,"The farewell (slow)");
+        hamratSongHashmap.put(8,"A battle of claws");
+        hamratSongHashmap.put(9,"The farewell");
+
+
+
 
         bedTypes.add(Material.BLACK_BED);
         bedTypes.add(Material.BLUE_BED);
@@ -190,6 +240,27 @@ public final class MainManager extends JavaPlugin implements Listener {
 
         new reauthor_book(this);
 
+        new clean_dialogue_1(this);
+        new clean_dialogue_2(this);
+        new clean_dialogue_3(this);
+
+        new give_resize_potion(this);
+
+        new slow_mode(this);
+        new reset_street_npcs(this);
+
+        new hamrat_invisible(this);
+        new hamrat_un_invisible(this);
+
+        new frog(this);
+        new quest(this);
+        new web_bossbar_start(this);
+        new summonBossSpider(this);
+
+        new summon_tiny_horses(this);
+
+        new newrats_dialogue_1(this);
+
         ambientManager = new AmbientManager(this);
         citizensManipulate = new CitizensManipulate(this);
         stoveManager = new StoveManager(this);
@@ -232,10 +303,96 @@ public final class MainManager extends JavaPlugin implements Listener {
         //createAllDoors();
         //turnAllStoveTopsOn();
         teleportLocation = new Location(getWorld(),141.5, -2.5, -134.5);
+        AFKTeleportLocation = new Location(getWorld(),154.5, -28.5, -124.5);
+
+        File dataFile = new File(getDataFolder(), "player_locations.json");
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+        if (!dataFile.exists()) {
+            try {
+                dataFile.createNewFile();
+                try (FileWriter writer = new FileWriter(dataFile)) {
+                    new Gson().toJson(new JsonObject(), writer); // Create an empty JSON object in the file
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        hamratSoundLocation= new Location(getWorld(),98.295f, -3.93f, -115.44f);
+
+        setUpBlithers();
 
 
+
+
+        BukkitTask bukkitTask2 = new BukkitRunnable() {
+            @Override
+            public void run() {
+                setUpQuestMarkers();
+            }
+        }.runTaskLater(this, 200); // 100 ticks = 5 seconds
+
+        wire1 = new Location(getWorld(),50.775, -28.19135, -93.328);
+        wire2 = new Location(getWorld(),49.709, -30.22649, -59.672);
+
+        boilerManLocation1 = new Location(getWorld(),38, -55, -157);
+        boilerManLocation2 = new Location(getWorld(),72, -55, -108);
 
         Utility.sendMessageToAllAdmins("Code initialised successfully");
+    }
+
+    private void setUpQuestMarkers() {
+        for(Entity entity : getWorld().getEntities()){
+            if(entity.getScoreboardTags().contains("QuestMarker")){
+                questMarkers.add((ArmorStand) entity);
+            }
+        }
+    }
+
+    private void setUpBlithers() {
+
+        blithersLocation = new Location(getWorld(),54.525, -13, -160.057,0,0);
+        //blithersLocation = new Location(getWorld(),-9, -63, 36,180,0);
+
+
+        Chunk chunk = blithersLocation.getChunk();
+        chunk.load(true);
+        chunk.setForceLoaded(true);
+
+        BukkitTask bukkitTask2 = new BukkitRunnable() {
+            @Override
+            public void run() {
+                ArrayList<Entity> entitiesToRemove = new ArrayList<>();
+                Utility.sendMessageToAllAdmins("Debug1");
+                for(Entity entity : blithersLocation.getWorld().getEntities()){
+                    if(entity.getScoreboardTags().contains("blithers")){
+                        entitiesToRemove.add(entity);
+                    }
+                }
+                Utility.sendMessageToAllAdmins("Debug2");
+                Utility.sendMessageToAllAdmins("amount of entites to remove for blithers is: " + entitiesToRemove.size());
+                for(Entity entity : entitiesToRemove){
+                    entity.remove();
+                }
+            }
+        }.runTaskLater(this, 40); // 100 ticks = 5 seconds*/
+
+        BukkitTask bukkitTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                Utility.sendMessageToAllAdmins("SPAWNING RATRADER NOW:");
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"rattrader " + blithersLocation.getX()+" "+blithersLocation.getY()+" "+blithersLocation.getZ()+ " " +blithersLocation.getYaw() + " " + blithersLocation.getPitch());
+            }
+        }.runTaskLater(this, 100); // 100 ticks = 5 seconds*/
+
+
+
+    }
+
+    public Location getBlithersLocation() {
+        return blithersLocation;
     }
 
     private void init_returning_rats() {
@@ -254,6 +411,33 @@ public final class MainManager extends JavaPlugin implements Listener {
         returningRats.add("willowmvp");
         returningRats.add("ShubbleYT");
         returningRats.add("Tubbo_");
+    }
+
+
+
+    @EventHandler
+    public void onConsumeItem(PlayerItemConsumeEvent event){
+        if(event.getItem().getType()==Material.POTION){
+            if(event.getItem().getItemMeta().hasCustomModelData() && event.getItem().getItemMeta().getCustomModelData()==2){
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 1.6 " + event.getPlayer().getName());
+                BukkitTask bukkitTask = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 0.625 " + event.getPlayer().getName());
+                    }
+                }.runTaskLater(this, 5*60*20); // 100 ticks = 5 seconds
+
+            }else if(event.getItem().getItemMeta().hasCustomModelData() && event.getItem().getItemMeta().getCustomModelData()==1){
+                Utility.sendMessageToAllAdmins("debug3");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 0.625 " + event.getPlayer().getName());
+                BukkitTask bukkitTask = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 1.6 " + event.getPlayer().getName());
+                    }
+                }.runTaskLater(this, 5*60*20); // 100 ticks = 5 seconds
+            }
+        }
     }
 
     private void init_cookableItems() {
@@ -281,9 +465,14 @@ public final class MainManager extends JavaPlugin implements Listener {
         return returningRatsTeam;
     }
 
+    public ArrayList<ArmorStand> getQuestMarkers() {
+        return questMarkers;
+    }
+
     private void createRadio() {
         clearAllRadios();
-        radio = new Radio(new Location(getWorld(),-38, -53, -48),this);
+        radio = new Radio(new Location(getWorld(),-48, -22, -174),this);
+        //
     }
 
     public BukkitTask getCatDiscEvent() {
@@ -302,7 +491,6 @@ public final class MainManager extends JavaPlugin implements Listener {
     public void init_cheeses(){
         clearAllCheeses();
 
-
         cheeseLocations.clear();
         cheeseLocations.add(new Location(getWorld(),91, -43, -56));
         cheeseLocations.add(new Location(getWorld(),91, -43, -95));
@@ -319,11 +507,12 @@ public final class MainManager extends JavaPlugin implements Listener {
         cheeseLocations.add(new Location(getWorld(),97, -55, -64));
         cheeseLocations.add(new Location(getWorld(),62, -55, -78));
         cheeseLocations.add(new Location(getWorld(),12, -55, -72));
-        cheeseLocations.add(new Location(getWorld(),-25, -54, -69));
-        cheeseLocations.add(new Location(getWorld(),-13, -53, -35));
-        cheeseLocations.add(new Location(getWorld(),-96, -52, -83));
-        cheeseLocations.add(new Location(getWorld(),-93, -48, -85));
-        cheeseLocations.add(new Location(getWorld(),-73, -52, -87));
+
+        cheeseLocations.add(new Location(getWorld(),-25, -53, -69));
+        cheeseLocations.add(new Location(getWorld(),-13, -52, -35));
+        cheeseLocations.add(new Location(getWorld(),-96, -51, -83));
+        cheeseLocations.add(new Location(getWorld(),-93, -47, -85));
+        cheeseLocations.add(new Location(getWorld(),-73, -51, -87));
 
         remainingCheeseLocations.clear();
         remainingCheeseLocations.addAll(cheeseLocations);
@@ -591,6 +780,21 @@ public final class MainManager extends JavaPlugin implements Listener {
         lootChests.add(new LootChest("RareCrypt11","crypt_rare",new Location(getWorld(),190, -55, 26),BlockFace.SOUTH,this));
         lootChests.add(new LootChest("RareCrypt12","crypt_rare",new Location(getWorld(),205, -55, -68),BlockFace.SOUTH,this));
         lootChests.add(new LootChest("RareCrypt13","crypt_rare",new Location(getWorld(),255, -55, -168),BlockFace.WEST,this));
+
+        //Extra Basement
+        lootChests.add(new LootChest("BasementExtra1","misc",new Location(getWorld(),20, -53, -104),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra2","misc",new Location(getWorld(),21, -52, -141),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra3","misc",new Location(getWorld(),-57, -52, -144),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra4","misc",new Location(getWorld(),-34, -55, -148),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra5","misc",new Location(getWorld(),-5, -54, -75),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra6","misc",new Location(getWorld(),22, -53, -78),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra7","misc",new Location(getWorld(),53, -51, -78),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra8","misc",new Location(getWorld(),117, -53, -56),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra9","misc",new Location(getWorld(),57, -55, -101),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra10","misc",new Location(getWorld(),31, -54, -158),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra11","misc",new Location(getWorld(),-13, -55, -164),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra12","misc",new Location(getWorld(),-61, -54, -144),BlockFace.NORTH,this));
+        lootChests.add(new LootChest("BasementExtra13","misc",new Location(getWorld(),-49, -54, -69),BlockFace.NORTH,this));
 
         chestPasteLocations.clear();
     }
@@ -1191,42 +1395,63 @@ public final class MainManager extends JavaPlugin implements Listener {
 
     public void setNightTimeLights(){
         getWorld().setGameRule(GameRule.COMMAND_MODIFICATION_BLOCK_LIMIT,999999999);
-        int delay = 1;
-        for(int y=15; y>-64; y--) {
+        Score slowmodeScore = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("config").getScore("slowmode");
 
-            int finalY = y;
-            BukkitTask bukkitTask = new BukkitRunnable(){
-                @Override
-                public void run(){
-                    //getWorld().setGameRule(GameRule.SEND_COMMAND_FEEDBACK,false);
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=8] replace light[level=12]");
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=5] replace light[level=13]");
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=0] replace light[level=15]");
-                    //getWorld().setGameRule(GameRule.SEND_COMMAND_FEEDBACK,true);
-                }
-            }.runTaskLater(this,20+delay);
+        if(slowmodeScore.getScore()==0){
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=8] replace light[level=12]");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=5] replace light[level=13]");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=0] replace light[level=15]");
+        }else{
+            int delay = 1;
+            for(int y=15; y>-64; y--) {
 
-            delay+=10;
+                int finalY = y;
+                BukkitTask bukkitTask = new BukkitRunnable(){
+                    @Override
+                    public void run(){
+                        //getWorld().setGameRule(GameRule.SEND_COMMAND_FEEDBACK,false);
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=8] replace light[level=12]");
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=5] replace light[level=13]");
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=0] replace light[level=15]");
+                        //getWorld().setGameRule(GameRule.SEND_COMMAND_FEEDBACK,true);
+                    }
+                }.runTaskLater(this,20+delay);
+
+                delay+=10;
+            }
         }
+
+
     }
 
     public void setDayTimeLights(){
         getWorld().setGameRule(GameRule.COMMAND_MODIFICATION_BLOCK_LIMIT,999999999);
-        int delay = 0;
-        for(int y=15; y>-64; y--){
 
-            int finalY = y;
-            BukkitTask bukkitTask = new BukkitRunnable(){
-                @Override
-                public void run(){
-                    //Utility.sendMessageToAllAdmins("y is now: " + finalY);
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=12] replace light[level=8]");
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=13] replace light[level=5]");
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=15] replace light[level=0]");
-                }
-            }.runTaskLater(this,20+delay);
 
-            delay+=10;
+        Score slowmodeScore = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("config").getScore("slowmode");
+
+        if(slowmodeScore.getScore()==0){
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=12] replace light[level=8]");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=13] replace light[level=5]");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 15 -184 104 -64 -26 light[level=15] replace light[level=0]");
+
+        }else {
+            int delay = 0;
+            for(int y=15; y>-64; y--){
+
+                int finalY = y;
+                BukkitTask bukkitTask = new BukkitRunnable(){
+                    @Override
+                    public void run(){
+                        //Utility.sendMessageToAllAdmins("y is now: " + finalY);
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=12] replace light[level=8]");
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=13] replace light[level=5]");
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"fill -110 "+ finalY +" -184 104 "+ finalY +" -26 light[level=15] replace light[level=0]");
+                    }
+                }.runTaskLater(this,20+delay);
+
+                delay+=10;
+            }
         }
     }
 
@@ -1350,7 +1575,7 @@ public final class MainManager extends JavaPlugin implements Listener {
             int z = event.getBlock().getZ();
 
             //String toWrite = lastMessageSent.get(event.getPlayer().getName())+" "+event.getPlayer().getFacing().toString()+":\n"+"new Location(getWorld(),"+x+", "+y+", "+z+");";
-            String toWrite = "spiderLocations.add(new Location(mainManager.getWorld(),"+x+", "+y+", "+z+"));";
+            String toWrite = "new Location(mainManager.getWorld(),"+x+", "+y+", "+z+");";
 
             try (PrintWriter out = new PrintWriter(new FileWriter("logged_locations.txt", true))) {
                 out.println(toWrite);
@@ -1384,6 +1609,14 @@ public final class MainManager extends JavaPlugin implements Listener {
 
             event.setCancelled(true);
         }
+
+        if(webBossbar!=null){
+            if(event.getBlock().getType()==Material.COBWEB){
+                if(webBossbar.getProgress()<1){
+                    webBossbar.setProgress(webBossbar.getProgress()+0.025);
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -1415,10 +1648,21 @@ public final class MainManager extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
+        if(event.getDamager() instanceof Player && event.getEntity() instanceof Player){
+            if(event.getDamager().getName().equals("apokuna") && event.getEntity().getName().equals("krowfang")){
+                ((Player) event.getEntity()).addPotionEffect(new PotionEffect(PotionEffectType.POISON,20*30,4));
+            }
+        }
+    }
+
+
+
+    @EventHandler
     public void onPlayerDamage(EntityDamageEvent event){
         if(event.getEntity() instanceof Player){
             Player player = (Player)event.getEntity();
-            if(event.getCause()== EntityDamageEvent.DamageCause.FALL){
+            /*if(event.getCause()== EntityDamageEvent.DamageCause.FALL){
                 double damage = event.getDamage();
                 double health = player.getHealth();
                 // Check if the player would die from this fall
@@ -1429,7 +1673,7 @@ public final class MainManager extends JavaPlugin implements Listener {
                     // Optionally, set the player's health to 1 or another value to prevent death
                     player.setHealth(1.0);
                 }
-            }
+            }*/
 
             if(event.getCause()==EntityDamageEvent.DamageCause.SUFFOCATION){
                 event.setCancelled(true);
@@ -1465,14 +1709,109 @@ public final class MainManager extends JavaPlugin implements Listener {
             Utility.setPlayerName(event.getPlayer(),playerName, this);
         }
 
+        if(event.getPlayer().getScoreboardTags().contains("rat")){
+            if(!isPlayerBetweenLocations(event.getPlayer(),new Location(getWorld(),162, -30, -121),new Location(getWorld(),156, -26, -129))){
+                String playerActualName = event.getPlayer().getName();
+                Location loc = event.getPlayer().getLocation();
+
+                JsonObject locationData = new JsonObject();
+                locationData.addProperty("world", loc.getWorld().getName());
+                locationData.addProperty("x", loc.getX());
+                locationData.addProperty("y", loc.getY());
+                locationData.addProperty("z", loc.getZ());
+                locationData.addProperty("yaw", loc.getYaw());
+                locationData.addProperty("pitch", loc.getPitch());
+
+                updatePlayerLocation(playerActualName, locationData);
+            }
+            event.getPlayer().teleport(new Location(event.getPlayer().getWorld(), 159.5, -29, -124.5,90f,0));
+        }
+
         event.setQuitMessage(ChatColor.GOLD + playerName + " has now taken a rat nap");
 
+        if(getWorld().getPlayers().size()<=1) {
+            checkIfCitizensCleared();
+        }
     }
+
+    public void checkIfCitizensCleared() {
+        if (!citizensCleared) {
+            citizensManipulate.hardClearAllNPCs();
+            Utility.sendMessageToAllAdmins("No players left on server, removing all citizens");
+        }
+    }
+
+    public void setCitizensCleared(boolean citizensCleared) {
+        this.citizensCleared = citizensCleared;
+    }
+
+    public boolean isCitizensCleared() {
+        return citizensCleared;
+    }
+
+    public boolean isPlayerBetweenLocations(Player player, Location loc1, Location loc2) {
+
+        Location playerLocation = player.getLocation();
+
+        // Calculate the min and max coordinates for the bounding box
+        double minX = Math.min(loc1.getX(), loc2.getX());
+        double maxX = Math.max(loc1.getX(), loc2.getX());
+
+        double minY = Math.min(loc1.getY(), loc2.getY());
+        double maxY = Math.max(loc1.getY(), loc2.getY());
+
+        double minZ = Math.min(loc1.getZ(), loc2.getZ());
+        double maxZ = Math.max(loc1.getZ(), loc2.getZ());
+
+        // Check if the player's location is within the bounds
+        return playerLocation.getX() >= minX && playerLocation.getX() <= maxX &&
+                playerLocation.getY() >= minY && playerLocation.getY() <= maxY &&
+                playerLocation.getZ() >= minZ && playerLocation.getZ() <= maxZ;
+    }
+
+    private void updatePlayerLocation(String playerName, JsonObject locationData) {
+        File dataFile = new File(getDataFolder(), "player_locations.json");
+        Gson gson = new Gson();
+
+        try {
+            JsonObject root;
+
+            // Load existing data from the file
+            try (FileReader reader = new FileReader(dataFile)) {
+                root = JsonParser.parseReader(reader).getAsJsonObject();
+            }
+
+            // Update or add the player's location
+            root.add(playerName, locationData);
+
+            // Save the updated data back to the file
+            try (FileWriter writer = new FileWriter(dataFile)) {
+                gson.toJson(root, writer);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
+        event.getPlayer().getScoreboardTags().remove("RatSqueakName=1");
+        event.getPlayer().getScoreboardTags().remove("RatSqueakName=5");
+
+        if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech1_Completed")&&!event.getPlayer().getScoreboardTags().contains("BoilerManSpeech2")){
+            event.getPlayer().getScoreboardTags().add("CueBoilerManSpeech2");
+        }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech2_Completed")&&!event.getPlayer().getScoreboardTags().contains("BoilerManSpeech3")){
+            event.getPlayer().getScoreboardTags().add("CueBoilerManSpeech3");
+        }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech3_Completed")&&!event.getPlayer().getScoreboardTags().contains("BoilerManSpeech4")){
+            event.getPlayer().getScoreboardTags().add("CueBoilerManSpeech4");
+        }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech4_Completed")&&!event.getPlayer().getScoreboardTags().contains("BoilerManSpeech5")){
+            event.getPlayer().getScoreboardTags().add("CueBoilerManSpeech5");
+        }
+
         if(!event.getPlayer().getScoreboardTags().contains("rat")){
-            event.setJoinMessage(".");
+            event.setJoinMessage("");
         }else{
             event.getPlayer().setInvulnerable(true);
 
@@ -1509,6 +1848,20 @@ public final class MainManager extends JavaPlugin implements Listener {
                 }
             }.runTaskLater(this,20*20);
 
+
+        }
+
+        if(getWorld().getPlayers().isEmpty()){
+            Utility.sendMessageToAllAdmins("Player joined, spawning citizens");
+            getCitizensManipulate().spawnCitizens();
+            getCitizensManipulate().startCitizensWalking(50);
+
+            BukkitTask bukkitTask2 = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Utility.sendMessageToAllAdmins("Done making citizens walk");
+                }
+            }.runTaskLater(this, (20L * 51)+100);
         }
     }
 
@@ -1571,25 +1924,24 @@ public final class MainManager extends JavaPlugin implements Listener {
             }
         }
 
-
-
+        //White banner stuff
         if(event.getPlayer().isOp()) {
             //op's right clicking with sticks
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getPlayer().getInventory().getItemInMainHand().getType() == Material.STICK) {
                 String itemName ="ratsmp2_forgenpc:"+ event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName()+"_block";
-                Utility.sendMessageToAllAdmins("player right clicked block: " + event.getClickedBlock().getLocation().getBlockX() + " " + event.getClickedBlock().getLocation().getBlockY() + " " + event.getClickedBlock().getLocation().getBlockZ() + " with: " + itemName);
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "setblock " + event.getClickedBlock().getLocation().getBlockX() + " " + (event.getClickedBlock().getLocation().getBlockY() - 1) + " " + event.getClickedBlock().getLocation().getBlockZ() + " " + itemName);
-                if (event.getClickedBlock().getLocation().clone().add(0, 1, 0).getBlock().getType() == Material.AIR) {
-                    Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "setblock " + event.getClickedBlock().getLocation().getBlockX() + " " + (event.getClickedBlock().getLocation().getBlockY() + 1) + " " + event.getClickedBlock().getLocation().getBlockZ() + " minecraft:white_banner");
-                }
+                Utility.sendMessageToAllAdmins("player right clicked block: " + event.getClickedBlock().getLocation().getBlockX() + " " + event.getClickedBlock().getLocation().getBlockY() + " " + event.getClickedBlock().getLocation().getBlockZ() + " with: " + itemName);
+                //if (event.getClickedBlock().getLocation().clone().add(0, 1, 0).getBlock().getType() == Material.AIR) {
+                //    Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "setblock " + event.getClickedBlock().getLocation().getBlockX() + " " + (event.getClickedBlock().getLocation().getBlockY() + 1) + " " + event.getClickedBlock().getLocation().getBlockZ() + " minecraft:white_banner");
+                //}
 
-                String toWrite = "\n"+event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName()+"\n " +"catcherLocations.add(new Location(mainManager.getWorld(),"+event.getClickedBlock().getLocation().getBlockX()+", "+event.getClickedBlock().getLocation().getBlockY()+", "+event.getClickedBlock().getLocation().getBlockZ()+"));";
-                try (PrintWriter out = new PrintWriter(new FileWriter("catcher_locations.txt", true))) {
-                    out.println(toWrite);
-                    Utility.sendMessageToAllAdmins("Successfully logged location: " + toWrite);
-                } catch (IOException e) {
-                    getLogger().warning("Failed to write to file: " + e.getMessage());
-                }
+//                String toWrite = "\n"+event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName()+"\n " +"catcherLocations.add(new Location(mainManager.getWorld(),"+event.getClickedBlock().getLocation().getBlockX()+", "+event.getClickedBlock().getLocation().getBlockY()+", "+event.getClickedBlock().getLocation().getBlockZ()+"));";
+//                try (PrintWriter out = new PrintWriter(new FileWriter("catcher_locations.txt", true))) {
+//                    out.println(toWrite);
+//                    Utility.sendMessageToAllAdmins("Successfully logged location: " + toWrite);
+//                } catch (IOException e) {
+//                    getLogger().warning("Failed to write to file: " + e.getMessage());
+//                }
 
 
             }
@@ -1602,17 +1954,100 @@ public final class MainManager extends JavaPlugin implements Listener {
                 }
             }
         }
+
+        if(event.getPlayer().getScoreboardTags().contains("Hamrat")){
+            if(event.getPlayer().getInventory().getItemInMainHand().getType()==Material.STICK){
+                if(event.getAction()==Action.RIGHT_CLICK_AIR){
+                    if(!event.getPlayer().isSneaking()){
+                        hamratNarrationIndex+=1;
+                        if(hamratNarrationIndex>8){
+                            hamratNarrationIndex=8;
+                        }
+                        playHamratNarration();
+                        event.getPlayer().sendMessage("Forwards 1 Narration");
+                    }else{
+                        hamratNarrationIndex-=1;
+                        if(hamratNarrationIndex<0){
+                            hamratNarrationIndex=0;
+                        }
+                        playHamratNarration();
+                        event.getPlayer().sendMessage("Backwards 1 Narration");
+                    }
+                    ItemMeta meta = event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+                    meta.setDisplayName("Next Narration: " + hamratNarrationIndex);
+                    event.getPlayer().getInventory().getItemInMainHand().setItemMeta(meta);
+                }
+            }else if(event.getPlayer().getInventory().getItemInMainHand().getType()==Material.ARROW){
+                if(event.getAction()==Action.RIGHT_CLICK_AIR){
+                    if(!event.getPlayer().isSneaking()){
+                        hamratSongIndex+=1;
+                        if(hamratSongIndex>10){
+                            hamratSongIndex=10;
+                        }
+                        playHamratSong();
+                    }else{
+                        hamratSongIndex-=1;
+                        if(hamratSongIndex<0){
+                            hamratSongIndex=0;
+                        }
+                        playHamratSong();
+                    }
+                    ItemMeta meta = event.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+                    meta.setDisplayName("Next song: " + hamratSongHashmap.get(hamratSongIndex+1));
+                    event.getPlayer().getInventory().getItemInMainHand().setItemMeta(meta);
+                }
+            }else if(event.getPlayer().getInventory().getItemInMainHand().getType()==Material.RED_DYE){
+                if(event.getAction()==Action.RIGHT_CLICK_AIR||event.getAction()==Action.RIGHT_CLICK_BLOCK){
+                    for(Player player : getWorld().getPlayers()){
+                        player.stopSound(SoundCategory.VOICE);
+                        player.stopSound(SoundCategory.RECORDS);
+                    }
+                    event.getPlayer().sendMessage("Stopped all songs and narration");
+                }
+            }
+        }
+    }
+
+
+    private void playHamratNarration(){
+        for(Player player : getWorld().getPlayers()){
+            player.stopSound(SoundCategory.VOICE);
+        }
+        getWorld().playSound(hamratSoundLocation,"rats2:powevents.sound.narration_"+hamratNarrationIndex,SoundCategory.VOICE,1,1);
+
+    }
+
+    private void playHamratSong(){
+        for(Player player : getWorld().getPlayers()){
+            player.stopSound(SoundCategory.RECORDS);
+            if(player.getScoreboardTags().contains("Hamrat")){
+                player.sendMessage("Playing: " + hamratSongHashmap.get(hamratSongIndex));
+            }
+        }
+        getWorld().playSound(hamratSoundLocation,"rats2:powevents.sound.song_"+hamratSongIndex,SoundCategory.RECORDS,1,1);
     }
 
     private void releaseFunSnap(Player player) {
         player.damage(2);
         player.getWorld().playSound(player.getLocation(),Sound.ENTITY_GENERIC_EXPLODE,SoundCategory.PLAYERS,1,2);
         player.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL,player.getLocation(),0,0,0,1);
-        Location behindPlayer = Utility.getPositionBehindHead(player);
-        Vector direction = behindPlayer.toVector().subtract(player.getLocation().toVector()).normalize();
+
         Random random = new Random();
         float randomFloat = random.nextFloat(1.05f,1.3f);
+
+        Location behindPlayer = Utility.getPositionBehindHead(player);
+        Vector direction = behindPlayer.toVector().subtract(player.getLocation().toVector()).normalize();
         player.setVelocity(direction.multiply(randomFloat));
+
+        Location releasingPlayerLocation = player.getLocation();
+        for(Player surroundingPlayer : getWorld().getPlayers()){
+            if(surroundingPlayer.getLocation().distance(releasingPlayerLocation)<0.8f){
+                Vector direction2 = releasingPlayerLocation.toVector().subtract(surroundingPlayer.getLocation().toVector()).normalize();
+                surroundingPlayer.setVelocity(direction2.multiply(randomFloat));
+            }
+        }
+
+
         if(player.getInventory().getItemInMainHand().getType()==Material.PAPER){
             player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);
         }else{
@@ -1639,12 +2074,195 @@ public final class MainManager extends JavaPlugin implements Listener {
                 event.setCancelled(true);
             }
         }
+
+        if(webBossbar!=null){
+            if(event.getBlock().getType()==Material.COBWEB){
+                if(webBossbar.getProgress()>0){
+                    double newValue = webBossbar.getProgress()-0.05;
+                    webBossbar.setProgress(Math.max(newValue,0));
+                    for(Player player : getWorld().getPlayers()){
+                        webBossbar.addPlayer(player);
+                    }
+
+                    if(webBossbar.getProgress()==0){
+                        endWebBossBar();
+                    }
+                }
+                Random random = new Random();
+                if(random.nextBoolean()){
+                    summonTinySpiderAtLoc(event.getBlock().getLocation().clone().add(0.5,0.1,0.5),1);
+                }
+            }
+        }
+    }
+
+    private void endWebBossBar() {
+        webBossbar.setVisible(false);
+        for(Player player : getWorld().getPlayers()){
+            player.sendTitle("Eviction Avoided!","",20,100,20);
+            player.playSound(player,Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1,1);
+        }
+        for(Entity entity : getWorld().getEntities()){
+            if(entity instanceof Spider){
+                entity.remove();
+            }
+        }
+        webBossbar=null;
+    }
+
+    @EventHandler
+    public void onPlayerSpeak(AsyncPlayerChatEvent event){
+        if(playerIsNearBoilerMan(event.getPlayer(),4)){
+            String message = event.getMessage();
+            // Split the message into words using spaces as a delimiter
+            String[] words = message.trim().split("\\s+");
+            // Count the words
+            int wordCount = words.length;
+
+            ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+            if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech3_AwaitingResponse1")){
+
+                if(wordCount==5){
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().remove("BoilerManSpeech3_AwaitingResponse1");
+
+                    }
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Very good.",2*20,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> In that case, I have a question for you.",4*20,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Can you understand all humans? Or just me?",8*20,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Give me 1 squeak for all humans, and 2 squeaks for just me.",11*20,getRandomBoilerManNoise(),this);
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().add("BoilerManSpeech3_AwaitingResponse2");
+                    }
+                }else{
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> That was " + wordCount+ " squeaks... Try squeaking 5 times.",20,getRandomBoilerManNoise(),this);
+                }
+
+            }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech3_AwaitingResponse2")){
+
+
+
+                if(wordCount<=2){
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().remove("BoilerManSpeech3_AwaitingResponse2");
+                        player.getScoreboardTags().add("BoilerManSpeech3_Completed");
+                    }
+                    if(wordCount==1){
+                        Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> ALL humans? Interesting... ",1*20,getRandomBoilerManNoise(),this);
+                    }else{
+                        Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Just me hm? How disappointing...",1*20,getRandomBoilerManNoise(),this);
+                    }
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Very well, scurry on little rat. I have much to consider.",5*20,getRandomBoilerManNoise(),this);
+                }else{
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> That was " + wordCount+ " squeaks... Try again..",20,getRandomBoilerManNoise(),this);
+                }
+            }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech4_AwaitingResponse1")){
+                for(Player player : playersNearBoilerMan){
+                    player.getScoreboardTags().remove("BoilerManSpeech4_AwaitingResponse1");
+                }
+
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Very good. Lets do this.",2*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I'll need a book and quill to write to Delroy. Fetch me it won't you?",7*20,getRandomBoilerManNoise(),this);
+            }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech4_AwaitingResponse2")){
+                for(Player player : playersNearBoilerMan){
+                    player.getScoreboardTags().remove("BoilerManSpeech4_AwaitingResponse2");
+                    player.getScoreboardTags().add("BoilerManSpeech4_Completed");
+                }
+                StringBuilder ratSqueakName = new StringBuilder();
+                event.getPlayer().getScoreboardTags().add("RatSqueakName_"+wordCount);
+                for (int i = 0; i < wordCount; i++) {
+                    if(i!=0){
+                        ratSqueakName.append(" ");
+                    }
+                    ratSqueakName.append("squeak");
+                }
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> " + ratSqueakName + "? Alright, I'll remember that.",2*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Okay, run along little rat. I have some writing to do.",5*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Come back another day, I will give you my letter then.",8*20,getRandomBoilerManNoise(),this);
+
+            } else{
+                ArrayList<String> responses = new ArrayList<>();
+                responses.add("<Muffled Voice> I can't understand your words little rat. They're just squeaks to me.");
+                responses.add("<Muffled Voice> Squeak squeak to you too, little rat.");
+                responses.add("<Muffled Voice> Hm? I do not understand your squeaks little rodent.");
+                responses.add("<Muffled Voice> Good squeaking little rat. Now run along");
+                responses.add("<Muffled Voice> I wouldn't loiter here little rat, the staff don't take kindly to rodents.");
+                responses.add("<Muffled Voice> I wouldn't loiter here little rat, the spiders aren't fond of you it seems.");
+
+                Random random = new Random();
+
+                Utility.cueSubtitle(event.getPlayer(),responses.get(random.nextInt(responses.size())), 20,getRandomBoilerManNoise(),this);
+            }
+
+        }
+    }
+
+    public boolean playerIsNearBoilerMan(Player player, int distance){
+        return(player.getLocation().distance(boilerManLocation1)<distance || player.getLocation().distance(boilerManLocation2)<distance);
+    }
+
+    public String getRandomBoilerManNoise(){
+        Random random = new Random();
+        return "rats2:powevents.sound.boilerroom_"+random.nextInt(1,4);
+    }
+
+    @EventHandler
+    public void onPlayerInteraction(PlayerInteractAtEntityEvent event){
+        if (event.getPlayer().getScoreboardTags().contains("CatRider") && event.getRightClicked() instanceof Rabbit && event.getHand() == EquipmentSlot.HAND) {
+            createRideableCat((Rabbit) event.getRightClicked(),event.getPlayer());
+
+        }
+    }
+
+    private void createRideableCat(Rabbit rightClicked, Player player) {
+        rideableArmourStands.add(new RideableArmourStand(rightClicked, player));
+    }
+
+
+    @EventHandler
+    public void onPlayerDrop(PlayerDropItemEvent event){
+        if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech1") && !event.getPlayer().getScoreboardTags().contains("BoilerManSpeech1_Completed")){
+            if(playerIsNearBoilerMan(event.getPlayer(),4)){
+                if(event.getItemDrop().getName().equals("Cheese")){
+                    ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().add("BoilerManSpeech1_Completed");
+                    }
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Very good. So you can understand me.",1,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Can your friends? Go get them. Tell them to come talk to me. We'll talk more later.",2*20,getRandomBoilerManNoise(),this);
+
+
+                    event.getItemDrop().remove();
+                }
+            }
+
+        }else if(event.getPlayer().getScoreboardTags().contains("BoilerManSpeech4") && !event.getPlayer().getScoreboardTags().contains("GaveBoilerManBook")){
+            if(playerIsNearBoilerMan(event.getPlayer(),4)){
+                if(event.getItemDrop().getName().equals("Book and Quill")){
+                    ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().add("GaveBoilerManBook");
+                    }
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Thank you little creature.",1,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> By the way, what is your name?",2*20,getRandomBoilerManNoise(),this);
+                    for(Player player : playersNearBoilerMan){
+                        player.getScoreboardTags().add("BoilerManSpeech4_AwaitingResponse2");
+                    }
+                    event.getItemDrop().remove();
+                }
+            }
+        }else{
+            Utility.sendMessageToAllAdmins("Debug fail 1");
+        }
     }
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event){
+
         if(event.getPlayer().getLocation().distance(teleportLocation)<1){
-            teleportPlayerToStartingLocation(event.getPlayer());
+            teleportPlayerToAttic(event.getPlayer());
+        }else if(event.getPlayer().getLocation().distance(AFKTeleportLocation)<1){
+            teleportPlayerToOriginalLocation(event.getPlayer());
         }
 
         Location blockID = event.getPlayer().getLocation().clone();
@@ -1661,7 +2279,7 @@ public final class MainManager extends JavaPlugin implements Listener {
         if(event.getPlayer().getGameMode()==GameMode.SURVIVAL){
             if(blockID.getBlock().getType()==Material.SOUL_SAND){
                 //TODO: put this back
-                //addWitherEffect(event.getPlayer());
+                addWitherEffect(event.getPlayer());
             }
         }
 
@@ -1669,6 +2287,10 @@ public final class MainManager extends JavaPlugin implements Listener {
         //Basement ambience
         if((blockID.getBlock().getType()==Material.COAL_BLOCK||blockID.getBlock().getType()==Material.COAL_ORE) && event.getPlayer().getLocation().getY()<-49){
             ambientManager.checkBasementAmbience(event.getPlayer());
+        }
+
+        if(event.getPlayer().getLocation().distance(blithersLocation)<2){
+            ambientManager.checkBlithersAmbience(event.getPlayer());
         }
 
         //boilerroom ambience
@@ -1681,8 +2303,6 @@ public final class MainManager extends JavaPlugin implements Listener {
             event.getPlayer().stopSound(SoundCategory.AMBIENT);
             ambientManager.getBasementPlayerMap().put(event.getPlayer().getName(),false);
         }
-
-
 
         if(!playerIsTrapped.containsKey(event.getPlayer().getName())){
             playerIsTrapped.put(event.getPlayer().getName(),false);
@@ -1701,6 +2321,184 @@ public final class MainManager extends JavaPlugin implements Listener {
                 }
             }
         }
+
+        if(event.getPlayer().getGameMode()==GameMode.SURVIVAL){
+            for(Entity entity : event.getPlayer().getNearbyEntities(0.3,0.3,0.3)){
+                if(entity instanceof ArmorStand){
+                    if(entity.getScoreboardTags().contains("QuestMarker")){
+                        entity.getWorld().playSound(entity.getLocation(),Sound.BLOCK_AMETHYST_BLOCK_STEP,1,1);
+                        questMarkers.remove(entity);
+                        entity.remove();
+                    }
+                }
+            }
+        }
+
+        if(event.getPlayer().getLocation().distance(wire1)<0.1||event.getPlayer().getLocation().distance(wire2)<0.1){
+            burnPlayer(event.getPlayer());
+        }
+
+
+        //TODO: Marker for boilerman speeches
+        if(playerIsNearBoilerMan(event.getPlayer(),2)){
+            if(!event.getPlayer().getScoreboardTags().contains("BoilerManSpeech1")){
+                ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                event.getPlayer().getScoreboardTags().add("BoilerManSpeech1");
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> *pst*, hey. you...",3*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Yeah you, the little rodent.",8*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> You can understand me, can't you..",11*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Maybe.. Maybe you can. Maybe you can't.",16*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Probably can't...",20*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Listen, if you can. fetch me something.",23*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I don't know, anything. Cheese? lets go with that.",26*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Bring me some cheese. Drop it in front of the little gap. Then come back another day. We'll see.",28*20,getRandomBoilerManNoise(),this);
+            }
+
+            if(event.getPlayer().getScoreboardTags().contains("CueBoilerManSpeech2")){
+
+                ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                for(Player player : playersNearBoilerMan){
+                    player.getScoreboardTags().remove("CueBoilerManSpeech2");
+
+                    player.getScoreboardTags().add("BoilerManSpeech1");
+                    player.getScoreboardTags().add("BoilerManSpeech1_Completed");
+
+                    player.getScoreboardTags().add("BoilerManSpeech2");
+                    player.getScoreboardTags().add("BoilerManSpeech2_Completed");
+                }
+
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Hello again little creature.",3*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> What are you doing down here?",8*20,getRandomBoilerManNoise(),this);
+                if(playersNearBoilerMan.size()>1){
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> And you've bought a friend with you?",10*20,getRandomBoilerManNoise(),this);
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> How many of you are there I wonder...",12*20,getRandomBoilerManNoise(),this);
+                }
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Are you looking for Carlos? He lives in the south west corner of this level.",14*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Or are you looking for the owner of this establishment? It's not Quincy, that's for sure.",18*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I don't think you're ready to talk to the owner, not yet. Maybe soon. Maybe.",22*20,getRandomBoilerManNoise(),this);
+                if(playersNearBoilerMan.size()>1){
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I have work to do, scurry on little rats.",28*20,getRandomBoilerManNoise(),this);
+                }else{
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I have work to do, scurry on little rat.",28*20,getRandomBoilerManNoise(),this);
+                }
+            }
+
+            if(event.getPlayer().getScoreboardTags().contains("CueBoilerManSpeech3")) {
+
+                ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                for (Player player : playersNearBoilerMan) {
+                    player.getScoreboardTags().remove("CueBoilerManSpeech2");
+                    player.getScoreboardTags().remove("CueBoilerManSpeech3");
+
+                    player.getScoreboardTags().add("BoilerManSpeech1");
+                    player.getScoreboardTags().add("BoilerManSpeech1_Completed");
+                    player.getScoreboardTags().add("BoilerManSpeech2");
+                    player.getScoreboardTags().add("BoilerManSpeech2_Completed");
+                    player.getScoreboardTags().add("BoilerManSpeech3");
+
+                }
+
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Welcome back little rat.",3*20,getRandomBoilerManNoise(),this);
+                if(playersNearBoilerMan.size()>1){
+                    Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Looks like you've got some friends with you.",6*20,getRandomBoilerManNoise(),this);
+                }
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I have a test for you. Can you squeak 5 times for me?",8*20,getRandomBoilerManNoise(),this);
+
+                for(Player player : playersNearBoilerMan){
+                    player.getScoreboardTags().add("BoilerManSpeech3_AwaitingResponse1");
+                }
+
+            }
+
+            if(event.getPlayer().getScoreboardTags().contains("CueBoilerManSpeech4")){
+                ArrayList<Player> playersNearBoilerMan = getPlayersNearBoilerMan(4);
+                for (Player player : playersNearBoilerMan) {
+                    player.getScoreboardTags().remove("CueBoilerManSpeech2");
+                    player.getScoreboardTags().remove("CueBoilerManSpeech3");
+                    player.getScoreboardTags().remove("CueBoilerManSpeech4");
+
+
+                    player.getScoreboardTags().add("BoilerManSpeech1");
+                    player.getScoreboardTags().add("BoilerManSpeech1_Completed");
+                    player.getScoreboardTags().add("BoilerManSpeech2");
+                    player.getScoreboardTags().add("BoilerManSpeech2_Completed");
+                    player.getScoreboardTags().add("BoilerManSpeech3");
+                    player.getScoreboardTags().add("BoilerManSpeech3_Completed");
+                    player.getScoreboardTags().add("BoilerManSpeech4");
+                }
+
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Pitter patter go the feet of a little rat outside my door... ",3*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Welcome back, tiny creature.",6*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> You know, I wasn't always stuck in this room.",9*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I used to walk around the aparthotel.",12*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> But when Delroy fell ill, I promised him I would see to the boilers.",12*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> And I've been here since.",15*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> I'd visit him, but I dare not leave my post.",19*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> That, and I worry I would make his illness worse...",22*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> But I've been thinking... You could visit him for me?",24*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> Delroy is the owner of the aparthotel. An old friend of mine.",28*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> But getting to him won't be easy. Quincy keeps him under lock and key.",31*20,getRandomBoilerManNoise(),this);
+                Utility.cueSubtitlesForPlayers(playersNearBoilerMan,"<Muffled Voice> What say you, little rodent. Shall we try reach him together? Give me a squeak.",34*20,getRandomBoilerManNoise(),this);
+                for (Player player : playersNearBoilerMan) {
+                    player.getScoreboardTags().add("BoilerManSpeech4_AwaitingResponse1");
+                }
+            }
+        }
+    }
+
+    private ArrayList<Player> getPlayersNearBoilerMan(int distance) {
+        ArrayList<Player> playersNearBoilerMan = new ArrayList<>();
+        for(Player player : getWorld().getPlayers()){
+            if(playerIsNearBoilerMan(player,distance)){
+                playersNearBoilerMan.add(player);
+            }
+        }
+        return playersNearBoilerMan;
+    }
+
+
+    public void teleportPlayerToOriginalLocation(Player player) {
+        File dataFile = new File(getDataFolder(), "player_locations.json");
+
+        try {
+            // Read the JSON file
+            JsonObject root;
+            try (FileReader reader = new FileReader(dataFile)) {
+                root = JsonParser.parseReader(reader).getAsJsonObject();
+            }
+
+            // Check if the player's location exists
+            if (root.has(player.getName())) {
+                JsonObject locationData = root.getAsJsonObject(player.getName());
+
+                // Retrieve the saved location details
+                String worldName = locationData.get("world").getAsString();
+                double x = locationData.get("x").getAsDouble();
+                double y = locationData.get("y").getAsDouble();
+                double z = locationData.get("z").getAsDouble();
+                float yaw = locationData.get("yaw").getAsFloat();
+                float pitch = locationData.get("pitch").getAsFloat();
+
+                World world = Bukkit.getWorld(worldName);
+                if (world != null) {
+                    Location savedLocation = new Location(world, x, y, z, yaw, pitch);
+                    player.teleport(savedLocation);
+                    return;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        teleportPlayerToAttic(player);
+        //getLogger().warning("Default world is null. Cannot teleport player to default location.");
+
+    }
+
+    private void teleportPlayerToAttic(Player player) {
+        player.teleport(new Location(getWorld(),60, -10, -51));
     }
 
     private void teleportPlayerToStartingLocation(Player player) {
@@ -2122,7 +2920,31 @@ public final class MainManager extends JavaPlugin implements Listener {
     }
 
     public void tickRunnableTrigger() {
+        unstablePotionTimer+=1;
+
+
+        if(!rideableArmourStands.isEmpty()){
+            rideableArmourStandsToRemove.clear();
+            for(RideableArmourStand rideableArmourStand : rideableArmourStands){
+                rideableArmourStand.move();
+                //if(rideableArmourStand.checkCleanUp()) {
+                //    rideableArmourStandsToRemove.add(rideableArmourStand);
+                //}
+            }
+
+            for(RideableArmourStand rideableArmourStandToRemove : rideableArmourStandsToRemove){
+                rideableArmourStands.remove(rideableArmourStandToRemove);
+            }
+        }
+
+
         for(Player player : Bukkit.getOnlinePlayers()){
+            if(player.getScoreboardTags().contains("UnstablePotion")){
+                if(unstablePotionTimer==300){
+                    giveUnstablePotionEffect(player);
+                }
+            }
+
             if(player.getGameMode()==GameMode.SURVIVAL){
 
                 //Check stove:
@@ -2141,6 +2963,29 @@ public final class MainManager extends JavaPlugin implements Listener {
                     }
                 }
 
+
+                //scott potion effect
+                if(player.getScoreboardTags().contains("UnstablePotion")){
+                    // Check if the player has both DOLPHINS_GRACE and BLINDNESS
+                    boolean hasDolphinsGrace = player.hasPotionEffect(PotionEffectType.DOLPHINS_GRACE);
+                    boolean hasBlindness = player.hasPotionEffect(PotionEffectType.BLINDNESS);
+                    boolean hasSlow = player.hasPotionEffect(PotionEffectType.SLOW);
+                    boolean hasNightVision = player.hasPotionEffect(PotionEffectType.NIGHT_VISION);
+                    if (hasDolphinsGrace && hasBlindness && hasSlow && hasNightVision) {
+                        player.getScoreboardTags().remove("UnstablePotion");
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale set pehkui:base 0.27 " + player.getName());
+                        for(PotionEffect potionEffect : player.getActivePotionEffects()){
+                            player.removePotionEffect(potionEffect.getType());
+                        }
+                    }
+                }else{
+                    //is stable
+                    boolean hasDolphinsGrace = player.hasPotionEffect(PotionEffectType.DOLPHINS_GRACE);
+                    boolean hasBlindness = player.hasPotionEffect(PotionEffectType.BLINDNESS);
+                    if (hasDolphinsGrace && hasBlindness) {
+                        player.getScoreboardTags().add("UnstablePotion");
+                    }
+                }
             }
         }
 
@@ -2149,7 +2994,74 @@ public final class MainManager extends JavaPlugin implements Listener {
                 tap.drip();
             }
         }
+
+        questMarkerTimer +=1;
+
+        if(webBossbar!=null){
+            if(questMarkerTimer%20==0){
+                secondsUntilWebEviction-=1;
+                if(secondsUntilWebEviction<0){
+                    secondsUntilWebEviction=59;
+                    minutesUntilWebEviction-=1;
+                    if(minutesUntilWebEviction<0){
+                        endWebBossBar();
+                    }
+                }
+                if(secondsUntilWebEviction<10){
+                    webBossbar.setTitle("Time till eviction - " + minutesUntilWebEviction + ":0" + secondsUntilWebEviction);
+                }else{
+                    webBossbar.setTitle("Time till eviction - " + minutesUntilWebEviction + ":" + secondsUntilWebEviction);
+                }
+            }
+        }
+
+        if((questMarkerTimer %200)==0){
+            for(ArmorStand armorStand : questMarkers){
+                armorStand.getWorld().playSound(armorStand.getLocation(),Sound.BLOCK_AMETHYST_BLOCK_RESONATE,SoundCategory.BLOCKS,1,1);
+            }
+            questMarkerTimer =0;
+        }else if(questMarkerTimer %40==0){
+            for(ArmorStand armorStand : questMarkers){
+                armorStand.getWorld().spawnParticle(
+                        Particle.END_ROD,  // Particle type
+                        armorStand.getLocation().clone().add(0,0.4,0),  // Location
+                        0,                 // Count (1 particle)
+                        0, 0, 0,           // Offset (no random spread)
+                        0.02               // Speed (makes it float upwards gently)
+                );
+            }
+        }
+
+        if(unstablePotionTimer>300){
+            unstablePotionTimer=0;
+        }
     }
+
+    private void giveUnstablePotionEffect(Player player) {
+        Random random = new Random();
+        if(random.nextBoolean()){
+            //Do random potion effect for 1 minute
+            List<PotionEffectType> potionEffects = new ArrayList<>();
+
+            potionEffects.add(PotionEffectType.BLINDNESS);
+            potionEffects.add(PotionEffectType.INVISIBILITY);
+            potionEffects.add(PotionEffectType.LEVITATION);
+            potionEffects.add(PotionEffectType.SLOW);
+
+            // Select a random effect
+            PotionEffectType randomEffect = potionEffects.get(random.nextInt(potionEffects.size()));
+
+            // Apply the effect to the player
+            player.addPotionEffect(new PotionEffect(randomEffect, 20*10, 1));
+
+
+        }else{
+            //Make player random height and width
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale set pehkui:width "+random.nextDouble(0.1,1) + " " +  player.getName());
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale set pehkui:height "+random.nextDouble(0.1,1) + " " + player.getName());
+        }
+    }
+
 
     public void updateLights() {
         if(isNight()){
@@ -2158,6 +3070,7 @@ public final class MainManager extends JavaPlugin implements Listener {
             setDayTimeLights();
         }
     }
+
 
     public void summonTinySpider(Location location,int numberOfSpiders) {
 
@@ -2191,7 +3104,30 @@ public final class MainManager extends JavaPlugin implements Listener {
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"execute as "+ entity.getUniqueId() +" run scale set pehkui:base 0.2 @s");
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"execute as "+ entity.getUniqueId() +" run scale set pehkui:hitbox_width 2 @s");
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"execute as "+ entity.getUniqueId() +" run scale set pehkui:hitbox_height 2 @s");
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"execute as "+ entity.getUniqueId() +" run scale set pehkui:motion 0.8 @s");
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),"execute as "+ entity.getUniqueId() +" run scale set pehkui:motion 1.3 @s");
+        }
+        for(Entity targetEntity : getWorld().getEntities()){
+            if(targetEntity instanceof Skeleton){
+                targetEntity.remove();
+            }
         }
     }
+
+    public void randomiseTradeNumber() {
+        int tradeID = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("config").getScore("trades").getScore();
+        Bukkit.getScoreboardManager().getMainScoreboard().getObjective("config").getScore("trades").setScore(tradeID+1);
+    }
+
+    public void startWebBossbar() {
+
+        webBossbar = Bukkit.createBossBar("Time till eviction - 15:00", BarColor.RED, BarStyle.SEGMENTED_20);
+
+        webBossbar.setProgress(0.5);
+        for(Player player : getWorld().getPlayers()){
+            webBossbar.addPlayer(player);
+        }
+        webBossbar.setVisible(true);
+
+    }
+
 }
