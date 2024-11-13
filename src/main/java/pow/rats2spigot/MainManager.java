@@ -190,6 +190,12 @@ public final class MainManager extends JavaPlugin implements Listener {
 
         new reauthor_book(this);
 
+        new clean_dialogue_1(this);
+        new clean_dialogue_2(this);
+        new clean_dialogue_3(this);
+
+        new give_resize_potion(this);
+
         ambientManager = new AmbientManager(this);
         citizensManipulate = new CitizensManipulate(this);
         stoveManager = new StoveManager(this);
@@ -254,6 +260,33 @@ public final class MainManager extends JavaPlugin implements Listener {
         returningRats.add("willowmvp");
         returningRats.add("ShubbleYT");
         returningRats.add("Tubbo_");
+    }
+
+    @EventHandler
+    public void onConsumeItem(PlayerItemConsumeEvent event){
+        if(event.getItem().getType()==Material.POTION){
+            Utility.sendMessageToAllAdmins("debug1");
+            if(event.getItem().getItemMeta().hasCustomModelData() && event.getItem().getItemMeta().getCustomModelData()==2){
+                Utility.sendMessageToAllAdmins("debug2");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 1.6 " + event.getPlayer().getName());
+                BukkitTask bukkitTask = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 0.625 " + event.getPlayer().getName());
+                    }
+                }.runTaskLater(this, 5*60*20); // 100 ticks = 5 seconds
+
+            }else if(event.getItem().getItemMeta().hasCustomModelData() && event.getItem().getItemMeta().getCustomModelData()==1){
+                Utility.sendMessageToAllAdmins("debug3");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 0.625 " + event.getPlayer().getName());
+                BukkitTask bukkitTask = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),"scale multiply pehkui:base 1.6 " + event.getPlayer().getName());
+                    }
+                }.runTaskLater(this, 5*60*20); // 100 ticks = 5 seconds
+            }
+        }
     }
 
     private void init_cookableItems() {
@@ -1472,7 +1505,7 @@ public final class MainManager extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
         if(!event.getPlayer().getScoreboardTags().contains("rat")){
-            event.setJoinMessage(".");
+            event.setJoinMessage("");
         }else{
             event.getPlayer().setInvulnerable(true);
 

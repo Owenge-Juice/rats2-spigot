@@ -48,12 +48,12 @@ public class CatcherRunnable extends BukkitRunnable {
             names.add("owner");
             names.add("scientist");
             names.add("bach");
-            names.add("widow");
+            //names.add("widow");
             names.add("evil_brother");
             names.add("evil_sister");
             names.add("gom");
             names.add("husband");
-            names.add("owners_son");
+            //names.add("owners_son");
             names.add("safety_inspector");
             names.add("widow_oldest_child");
             names.add("youngest_child");

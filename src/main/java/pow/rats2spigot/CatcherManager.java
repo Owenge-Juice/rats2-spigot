@@ -32,10 +32,10 @@ public class CatcherManager {
         namesOfCatchers.add("gom");
         namesOfCatchers.add("husband");
         namesOfCatchers.add("owner");
-        namesOfCatchers.add("owners_son");
+        //namesOfCatchers.add("owners_son");
         namesOfCatchers.add("safety_inspector");
         namesOfCatchers.add("scientist");
-        namesOfCatchers.add("widow");
+        //namesOfCatchers.add("widow");
         namesOfCatchers.add("widow_oldest_child");
         namesOfCatchers.add("youngest_child");
         namesOfCatchers.add("wife");
@@ -52,8 +52,8 @@ public class CatcherManager {
         catcherSpawnNightLocations.put("gom", "-62 -24 -75");
         catcherSpawnDayLocations.put("youngest_child", "-49 -45 -41");
         catcherSpawnNightLocations.put("youngest_child", "66 -24 -115");
-        catcherSpawnDayLocations.put("owners_son", "42 -45 -46");
-        catcherSpawnNightLocations.put("owners_son", "42 -45 -46");
+        //catcherSpawnDayLocations.put("owners_son", "42 -45 -46");
+        //catcherSpawnNightLocations.put("owners_son", "42 -45 -46");
         catcherSpawnDayLocations.put("bach", "-35 -24 -168");
         catcherSpawnNightLocations.put("bach", "-2 -55 -55");
         catcherSpawnDayLocations.put("widow_oldest_child", "63 -35 -156");
@@ -63,8 +63,8 @@ public class CatcherManager {
         catcherSpawnDayLocations.put("husband", "45 -23 -89");
         catcherSpawnNightLocations.put("husband", "-41 -24 -137");
 
-        catcherSpawnDayLocations.put("widow", "92 -24 -136");
-        catcherSpawnNightLocations.put("widow", "65 -24 -140");
+        //catcherSpawnDayLocations.put("widow", "92 -24 -136");
+        //catcherSpawnNightLocations.put("widow", "65 -24 -140");
 
         catcherSpawnDayLocations.put("scientist", "48 -45 -164");
         catcherSpawnNightLocations.put("scientist", "-92 -52 -92");

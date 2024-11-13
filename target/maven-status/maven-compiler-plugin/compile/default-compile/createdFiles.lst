@@ -1,8 +1,10 @@
 pow\rats2spigot\runnables\AmbientRunnable.class
 pow\rats2spigot\commands\open_all_doors.class
 pow\rats2spigot\interactables\Tap$2.class
+pow\rats2spigot\MainManager$8.class
 pow\rats2spigot\commands\clear_all_doors.class
 pow\rats2spigot\commands\halloween_dialogue_starting$1.class
+pow\rats2spigot\commands\clean_dialogue_3$1.class
 pow\rats2spigot\commands\inspector_dialogue_1.class
 pow\rats2spigot\DayTimeRunnable$1.class
 pow\rats2spigot\runnables\HalloweenRunnable.class
@@ -20,6 +22,7 @@ pow\rats2spigot\build\ThinDoor.class
 pow\rats2spigot\commands\stove_tops_off.class
 pow\rats2spigot\commands\halloween_dialogue_starting.class
 pow\rats2spigot\commands\create_trap.class
+pow\rats2spigot\commands\give_resize_potion.class
 pow\rats2spigot\commands\halloween_summon_brawl_3.class
 pow\rats2spigot\CitizensManipulate$2.class
 pow\rats2spigot\AmbientManager.class
@@ -32,6 +35,7 @@ pow\rats2spigot\StreetNPC.class
 pow\rats2spigot\commands\reauthor_book.class
 pow\rats2spigot\MainManager$3.class
 pow\rats2spigot\commands\summon_tiny_spider_here.class
+pow\rats2spigot\commands\clean_dialogue_2$1.class
 pow\rats2spigot\commands\inspector_dialogue_1$1.class
 pow\rats2spigot\CitizensManipulate.class
 pow\rats2spigot\commands\nighttime_doors.class
@@ -56,6 +60,7 @@ pow\rats2spigot\interactables\Cheese$1.class
 pow\rats2spigot\commands\little_tiles_chunk.class
 pow\rats2spigot\interactables\Radio.class
 pow\rats2spigot\AmbientManager$2.class
+pow\rats2spigot\commands\clean_dialogue_1.class
 pow\rats2spigot\commands\clear_all_npcs.class
 pow\rats2spigot\MainManager$1.class
 pow\rats2spigot\StoveManager.class
@@ -71,6 +76,7 @@ pow\rats2spigot\commands\halloween_dialogue_knowledge.class
 pow\rats2spigot\RadioRunnable.class
 pow\rats2spigot\build\NarrowDoor.class
 pow\rats2spigot\MainManager.class
+pow\rats2spigot\commands\clean_dialogue_1$1.class
 pow\rats2spigot\util\LootChest.class
 pow\rats2spigot\CitizensManipulate$1.class
 pow\rats2spigot\interactables\Tap$1.class
@@ -83,6 +89,7 @@ pow\rats2spigot\interactables\Cheese.class
 pow\rats2spigot\DayTimeRunnable$2.class
 pow\rats2spigot\commands\close_all_doors.class
 pow\rats2spigot\commands\inspector_crash.class
+pow\rats2spigot\MainManager$7.class
 pow\rats2spigot\commands\fakename.class
 pow\rats2spigot\commands\update_lights.class
 pow\rats2spigot\build\WideDoor.class
@@ -95,6 +102,7 @@ pow\rats2spigot\ChestRunnable.class
 pow\rats2spigot\commands\declan_2$1.class
 pow\rats2spigot\commands\spook_effect_near.class
 pow\rats2spigot\MainManager$6.class
+pow\rats2spigot\commands\clean_dialogue_3.class
 pow\rats2spigot\commands\test.class
 pow\rats2spigot\commands\inspector_dialogue_3$1.class
 pow\rats2spigot\commands\reset_all_cheeses.class
@@ -104,6 +112,7 @@ pow\rats2spigot\commands\begin_citizens.class
 pow\rats2spigot\commands\spook_effect_all.class
 pow\rats2spigot\commands\populate_all_chests.class
 pow\rats2spigot\build\BasementDoor.class
+pow\rats2spigot\commands\clean_dialogue_2.class
 pow\rats2spigot\commands\hard_clear_all_npcs.class
 pow\rats2spigot\commands\halloween_summon_brawl_2.class
 pow\rats2spigot\MainManager$5.class
